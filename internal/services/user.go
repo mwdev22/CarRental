@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -12,12 +13,12 @@ import (
 )
 
 type UserService struct {
-	userRepo store.Storage
+	userStore store.UserStore
 }
 
-func NewUserService(userRepo store.Storage) *UserService {
+func NewUserService(userStore store.UserStore) *UserService {
 	return &UserService{
-		userRepo: userRepo,
+		userStore: userStore,
 	}
 }
 
@@ -35,7 +36,7 @@ func (s *UserService) Register(payload *types.CreateUserRequest) error {
 		Created:  time.Now(),
 	}
 
-	if err := s.userRepo.CreateUser(user); err != nil {
+	if err := s.userStore.Create(context.Background(), user); err != nil {
 		return fmt.Errorf("failed to create user: %v", err)
 	}
 
@@ -43,9 +44,9 @@ func (s *UserService) Register(payload *types.CreateUserRequest) error {
 }
 
 func (s *UserService) Login(payload *types.LoginRequest) (string, error) {
-	user, err := s.userRepo.GetByUsername(payload.Username)
+	user, err := s.userStore.GetByUsername(context.Background(), payload.Username)
 	if err != nil {
-		return "", fmt.Errorf("failed to get user by username: %v", err)
+		return "", err
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(payload.Password)); err != nil {
@@ -58,6 +59,14 @@ func (s *UserService) Login(payload *types.LoginRequest) (string, error) {
 	}
 
 	return token, nil
+}
+
+func (s *UserService) GetByID(id int) (*store.User, error) {
+	user, err := s.userStore.GetByID(context.Background(), id)
+	if err != nil {
+		return nil, err
+	}
+	return user, err
 }
 
 func generateJWT(user *store.User) (string, error) {
@@ -76,4 +85,33 @@ func generateJWT(user *store.User) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+func (s *UserService) Delete(id int) error {
+	if err := s.userStore.Delete(context.Background(), id); err != nil {
+		return fmt.Errorf("failed to delete user: %v", err)
+	}
+
+	return nil
+}
+
+func (s *UserService) Update(payload *types.UpdateUserPayload, id int) error {
+	user, err := s.userStore.GetByID(context.Background(), id)
+	if err != nil {
+		return fmt.Errorf("failed to get user: %v", err)
+	}
+
+	if payload.Email != "" {
+		user.Email = payload.Email
+	}
+
+	if payload.Username != "" {
+		user.Username = payload.Username
+	}
+
+	if err := s.userStore.Update(context.Background(), user); err != nil {
+		return fmt.Errorf("failed to update user: %v", err)
+	}
+
+	return nil
 }

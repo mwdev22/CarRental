@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
@@ -33,6 +34,10 @@ func (h *UserHandler) RegisterRoutes() {
 	h.mux.HandleFunc("POST /register", makeHandler(h.handleRegister, logger))
 	h.mux.HandleFunc("POST /login", makeHandler(h.handleLogin, logger))
 	h.mux.HandleFunc("POST /check-token", makeHandler(h.handleCheckToken, logger))
+
+	h.mux.HandleFunc("GET /user/{id}", makeHandler(h.handleGetUser, logger))
+	h.mux.HandleFunc("DELETE /user/{id}", makeHandler(h.handleDeleteUser, logger))
+	h.mux.HandleFunc("PUT /user/{id}", makeHandler(h.handleUpdateUser, logger))
 
 }
 
@@ -64,6 +69,67 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
 		"message": "user logged in successfully!",
 		"token":   token,
+	})
+}
+
+func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) error {
+	userID := r.PathValue("id")
+	if userID == "" {
+		return badPathParameter("id")
+	}
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+	}
+	user, err := h.userService.GetByID(userIDInt)
+	if err != nil {
+		return serviceError(err)
+	}
+
+	return types.WriteJSON(w, http.StatusOK, user)
+}
+
+func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) error {
+	userID := r.PathValue("id")
+	if userID == "" {
+		return badPathParameter("id")
+	}
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+	}
+	err = h.userService.Delete(userIDInt)
+	if err != nil {
+		return serviceError(err)
+	}
+
+	return types.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "user deleted successfully!"})
+}
+
+func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
+
+	userID := r.PathValue("id")
+	if userID == "" {
+		return badPathParameter("id")
+	}
+	userIDInt, err := strconv.Atoi(userID)
+	if err != nil {
+		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+	}
+
+	var payload types.UpdateUserPayload
+	if err := types.ParseJSON(r, &payload); err != nil {
+		return invalidJSON(err)
+	}
+
+	err = h.userService.Update(&payload, userIDInt)
+	if err != nil {
+		return serviceError(err)
+	}
+
+	return types.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": fmt.Sprintf("user with id %v updated successfully", userIDInt),
 	})
 }
 
