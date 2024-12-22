@@ -22,7 +22,7 @@ func newApiError(statusCode int, e error) ApiError {
 }
 
 func invalidJSON(err error) ApiError {
-	return newApiError(http.StatusUnprocessableEntity, err)
+	return newApiError(http.StatusUnprocessableEntity, fmt.Errorf("invalid json, %v", err))
 }
 
 func invalidFormData(err error) ApiError {
