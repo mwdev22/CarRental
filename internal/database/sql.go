@@ -14,9 +14,6 @@ func OpenSQLConnection(uri string) (*sqlx.DB, error) {
 	var err error
 
 	db, err = sqlx.Open("postgres", uri)
-	if err != nil {
-		return nil, err
-	}
 
 	if err != nil {
 		log.Fatalf("failed to connect to the database: %v", err)
@@ -32,7 +29,7 @@ func OpenSQLConnection(uri string) (*sqlx.DB, error) {
 	db.SetMaxOpenConns(30)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
-	fmt.Println("Connected to database...\n")
+	fmt.Println("Connected to database..")
 	return db, nil
 
 }
