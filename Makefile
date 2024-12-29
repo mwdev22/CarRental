@@ -50,24 +50,24 @@ run:
 
 # Migration commands
 migrate-create:
-	@export DB_SOURCE=$(DATABASE_URI); \
+	@export DB_SOURCE=$(DB_URI); \
 	read -p "Enter migration name: " name; \
 	$(MIGRATE) create -ext sql -dir $(MIGRATIONS_DIR) -seq $$name
 
 migrate-up:
-	@export DB_SOURCE=$(DATABASE_URI); \
+	@export DB_SOURCE=$(DB_URI); \
 	$(MIGRATE) -database $$DB_SOURCE -path $(MIGRATIONS_DIR) up
 
 migrate-down:
-	@export DB_SOURCE=$(DATABASE_URI); \
+	@export DB_SOURCE=$(DB_URI); \
 	$(MIGRATE) -database $$DB_SOURCE -path $(MIGRATIONS_DIR) down 1
 
 migrate-force:
-	@export DB_SOURCE=$(DATABASE_URI); \
+	@export DB_SOURCE=$(DB_URI); \
 	$(MIGRATE) -database $$DB_SOURCE -path $(MIGRATIONS_DIR) force $(VERSION)
 
 migrate-drop:
-	@export DB_SOURCE=$(DATABASE_URI); \
+	@export DB_SOURCE=$(DB_URI); \
 	$(MIGRATE) -database $$DB_SOURCE -path $(MIGRATIONS_DIR) drop
 
 swag:

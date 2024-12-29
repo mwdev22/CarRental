@@ -15,14 +15,14 @@ import (
 )
 
 type UserHandler struct {
-	mux         *http.ServeMux
-	userService *services.UserService
+	mux  *http.ServeMux
+	user *services.UserService
 }
 
-func NewUserHandler(mux *http.ServeMux, userService *services.UserService) *UserHandler {
+func NewUserHandler(mux *http.ServeMux, user *services.UserService) *UserHandler {
 	return &UserHandler{
-		mux:         mux,
-		userService: userService,
+		mux:  mux,
+		user: user,
 	}
 }
 
@@ -35,9 +35,9 @@ func (h *UserHandler) RegisterRoutes() {
 	h.mux.HandleFunc("POST /login", makeHandler(h.handleLogin, logger))
 	h.mux.HandleFunc("POST /check-token", makeHandler(h.handleCheckToken, logger))
 
-	h.mux.HandleFunc("GET /user/{id}", makeHandler(h.handleGetUser, logger))
-	h.mux.HandleFunc("DELETE /user/{id}", makeHandler(h.handleDeleteUser, logger))
-	h.mux.HandleFunc("PUT /user/{id}", makeHandler(h.handleUpdateUser, logger))
+	h.mux.HandleFunc("GET /user/{id}", authMiddleware(h.handleGetUser, logger))
+	h.mux.HandleFunc("DELETE /user/{id}", authMiddleware(h.handleDeleteUser, logger))
+	h.mux.HandleFunc("PUT /user/{id}", authMiddleware(h.handleUpdateUser, logger))
 
 }
 
@@ -47,7 +47,7 @@ func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) err
 		return invalidJSON(err)
 	}
 
-	err := h.userService.Register(&payload)
+	err := h.user.Register(&payload)
 	if err != nil {
 		return serviceError(err)
 	}
@@ -62,7 +62,7 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 	if err := types.ParseJSON(r, &payload); err != nil {
 		return invalidJSON(err)
 	}
-	token, err := h.userService.Login(&payload)
+	token, err := h.user.Login(&payload)
 	if err != nil {
 		return serviceError(err)
 	}
@@ -81,7 +81,7 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) erro
 	if err != nil {
 		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
 	}
-	user, err := h.userService.GetByID(userIDInt)
+	user, err := h.user.GetByID(userIDInt)
 	if err != nil {
 		return serviceError(err)
 	}
@@ -98,7 +98,7 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 	if err != nil {
 		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
 	}
-	err = h.userService.Delete(userIDInt)
+	err = h.user.Delete(userIDInt)
 	if err != nil {
 		return serviceError(err)
 	}
@@ -123,7 +123,7 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 		return invalidJSON(err)
 	}
 
-	err = h.userService.Update(&payload, userIDInt)
+	err = h.user.Update(&payload, userIDInt)
 	if err != nil {
 		return serviceError(err)
 	}
