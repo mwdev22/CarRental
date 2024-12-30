@@ -17,6 +17,10 @@ TEST := go test
 RUN := go run
 MIGRATE := migrate
 
+# Common Go flags (can be customized from the command line)
+# Common Go flags (can be customized from the command line)
+GO_FLAGS :=
+
 # Targets
 .PHONY: all build clean fmt vet test run migrate-create migrate-up migrate-down migrate-drop
 
@@ -25,7 +29,7 @@ all: fmt vet test build
 
 # Build the application
 build:
-	GOOS=$(GOOS) GOARCH=$(GOARCH) $(BUILD) -o $(PROJECT_NAME).exe $(MAIN)
+	GOOS=$(GOOS) GOARCH=$(GOARCH) $(BUILD) $(GO_FLAGS) -o $(PROJECT_NAME).exe $(MAIN)
 
 # Clean the build files
 clean:
@@ -34,19 +38,24 @@ clean:
 
 # Format the Go code
 fmt:
-	$(FMT) $(PKG)
+	$(FMT) $(PKG) $(GO_FLAGS)
 
 # Vet the Go code
 vet:
-	$(VET) $(PKG)
+	$(VET) $(PKG) $(GO_FLAGS)
 
-# Run tests
+# Run tests (with optional flags)
 test:
-	$(TEST) $(PKG)
+	$(TEST) $(PKG) -v $(GO_FLAGS)
+
+benchmark:
+	$(TEST) $(PKG) -bench . $(GO_FLAGS)
 
 # Run the application
 run:
-	$(RUN) $(MAIN)
+	$(RUN) $(MAIN) $(GO_FLAGS)
+
+
 
 # Migration commands
 migrate-create:

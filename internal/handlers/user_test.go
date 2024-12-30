@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,9 +21,10 @@ var testServer *httptest.Server
 var authHeader string
 
 func TestMain(m *testing.M) {
-	cfg := config.New()
+	// changes the working directory to the project root, important for running migrations
+	_ = config.New()
 	// setup the test db
-	testDB, testDBName, err := database.OpenTestSqlDB(cfg.DatabaseURI)
+	testDB, err := database.OpenTestSqlDB()
 	if err != nil {
 		panic("failed to connect to test database: " + err.Error())
 	}
@@ -40,39 +40,10 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	testDB.Close()
+	// delete the database after tests
+	os.Remove("./test.db")
 
-	if err := testDB.Close(); err != nil {
-		log.Printf("failed to close database connection: %v\n", err)
-	}
-	if err := teardownTestDatabase(cfg.DatabaseURI, testDBName); err != nil {
-		log.Fatalf("failed to teardown test database: %v\n", err)
-	}
 	os.Exit(code)
-}
-
-func teardownTestDatabase(uri, name string) error {
-	// switch to default db to drop the test db
-	db, err := database.OpenSQLConnection(uri)
-	if err != nil {
-		log.Fatalf("failed to connect to the database: %v\n", err)
-	}
-	// terminate test db connections
-	_, err = db.Exec(fmt.Sprintf(`
-		SELECT pg_terminate_backend(pid)
-		FROM pg_stat_activity
-		WHERE datname = '%s' AND pid <> pg_backend_pid();
-	`, name))
-	if err != nil {
-		return fmt.Errorf("failed to terminate connections: %w", err)
-	}
-	// drop the test db
-	_, err = db.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s;", name))
-	if err != nil {
-		return fmt.Errorf("failed to drop test database: %w", err)
-	}
-
-	return nil
 }
 
 // test Register user route
@@ -188,20 +159,109 @@ func TestUpdateUser(t *testing.T) {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	// log the response
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("failed to read response body: %v", err)
 	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
+	}
+
 	t.Logf("update User response: %s", body)
+}
+
+func TestGetUser(t *testing.T) {
+	claims, err := checkToken()
+	if err != nil {
+		t.Fatalf("failed to check token: %v", err)
+	}
+
+	userID, ok := claims["id"].(float64)
+	if !ok {
+		t.Fatalf("expected user ID in claims, got: %v", claims)
+	}
+	userIDstr := fmt.Sprintf("%.0f", userID)
+
+	url := testServer.URL + "/user/" + userIDstr
+
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	req.Header.Set("Authorization", authHeader)
+	if err != nil {
+		t.Fatalf("failed to create GET request: %v", err)
+	}
+
+	resp, err := testServer.Client().Do(req)
+	if err != nil {
+		t.Fatalf("failed to send GET request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("failed to read response body: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
+	}
+
+	t.Logf("get User response: %s", body)
+
+	var user *store.User
+	if err := json.Unmarshal(body, &user); err != nil {
+		t.Fatalf("failed to unmarshal response body: %v", err)
+	}
+
+	if user.ID != int(userID) {
+		t.Errorf("expected user ID %d, got %d", int(userID), user.ID)
+	}
+
+	if user.Username != "testuser2" {
+		t.Errorf("expected username testuser2, got %s", user.Username)
+	}
+
+	if user.Email != "newmail@gmail.com" {
+		t.Errorf("expected email newmail@gmail.com, got %s", user.Email)
+	}
+}
+
+func TestDeleteUser(t *testing.T) {
+	claims, err := checkToken()
+	if err != nil {
+		t.Fatalf("failed to check token: %v", err)
+	}
+
+	userID, ok := claims["id"].(float64)
+	if !ok {
+		t.Fatalf("expected user ID in claims, got: %v", claims)
+	}
+	userIDstr := fmt.Sprintf("%.0f", userID)
+
+	url := testServer.URL + "/user/" + userIDstr
+
+	req, err := http.NewRequest(http.MethodDelete, url, nil)
+	req.Header.Set("Authorization", authHeader)
+	if err != nil {
+		t.Fatalf("failed to create DELETE request: %v", err)
+	}
+
+	resp, err := testServer.Client().Do(req)
+	if err != nil {
+		t.Fatalf("failed to send DELETE request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("failed to read response body: %v", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
+	}
+
+	t.Logf("delete User response: %s", body)
 }
 
 func checkToken() (map[string]interface{}, error) {

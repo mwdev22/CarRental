@@ -90,6 +90,7 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) erro
 }
 
 func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) error {
+	idFromToken := r.Context().Value(userIdKey)
 	userID := r.PathValue("id")
 	if userID == "" {
 		return badPathParameter("id")
@@ -98,6 +99,11 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 	if err != nil {
 		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
 	}
+
+	if idFromToken != nil && idFromToken != userIDInt {
+		return unauthorized("user can only delete their own profile")
+	}
+
 	err = h.user.Delete(userIDInt)
 	if err != nil {
 		return serviceError(err)
@@ -109,6 +115,8 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 
 func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
 
+	idFromToken := r.Context().Value(userIdKey)
+
 	userID := r.PathValue("id")
 	if userID == "" {
 		return badPathParameter("id")
@@ -116,6 +124,10 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 	userIDInt, err := strconv.Atoi(userID)
 	if err != nil {
 		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+	}
+
+	if idFromToken != nil && idFromToken != userIDInt {
+		return unauthorized("user can only update their own profile")
 	}
 
 	var payload types.UpdateUserPayload
