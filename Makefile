@@ -3,7 +3,7 @@ include .env
 export $(shell sed 's/=.*//' .env)
 
 # Project variables
-PROJECT_NAME := file_storage
+PROJECT_NAME := car_rental
 PKG := ./...
 MAIN := ./cmd/
 MIGRATIONS_DIR := migrations
@@ -17,7 +17,6 @@ TEST := go test
 RUN := go run
 MIGRATE := migrate
 
-# Common Go flags (can be customized from the command line)
 # Common Go flags (can be customized from the command line)
 GO_FLAGS :=
 
