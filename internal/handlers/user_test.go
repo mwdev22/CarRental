@@ -50,7 +50,7 @@ func TestMain(m *testing.M) {
 func TestRegister(t *testing.T) {
 	url := testServer.URL + "/register"
 
-	payload := &types.CreateUserRequest{
+	payload := &types.CreateUserPayload{
 		Username: "testuser",
 		Password: "testpassword",
 		Email:    "email@blabla.com",
@@ -81,7 +81,7 @@ func TestRegister(t *testing.T) {
 func TestLogin(t *testing.T) {
 	url := testServer.URL + "/login"
 
-	payload := &types.LoginRequest{
+	payload := &types.LoginPayload{
 		Username: "testuser",
 		Password: "testpassword",
 	}

@@ -1,4 +1,4 @@
-package handlers
+package types
 
 import (
 	"fmt"
@@ -21,34 +21,38 @@ func newApiError(statusCode int, e error) ApiError {
 	}
 }
 
-func invalidJSON(err error) ApiError {
+func InvalidJSON(err error) ApiError {
 	return newApiError(http.StatusUnprocessableEntity, fmt.Errorf("invalid json, %v", err))
 }
 
-func invalidFormData(err error) ApiError {
+func InvalidFormData(err error) ApiError {
 	return newApiError(http.StatusUnprocessableEntity, err)
 }
 
-func serviceError(err error) ApiError {
+func ServiceError(err error) ApiError {
 	return newApiError(http.StatusInternalServerError, err)
 }
 
-func externalServiceErr(err error) ApiError {
+func DatabaseError(err error) ApiError {
+	return newApiError(http.StatusInternalServerError, fmt.Errorf("database error: %v", err))
+}
+
+func ExternalServiceErr(err error) ApiError {
 	return newApiError(http.StatusBadRequest, err)
 }
 
-func unauthorized(msg any) ApiError {
+func Unauthorized(msg any) ApiError {
 	return newApiError(http.StatusUnauthorized, fmt.Errorf("unauthorized, %s", msg))
 }
 
-func badQueryParameter(name string) ApiError {
+func BadQueryParameter(name string) ApiError {
 	return newApiError(http.StatusBadRequest, fmt.Errorf("bad query param, %s", name))
 }
 
-func badPathParameter(name string) ApiError {
+func BadPathParameter(name string) ApiError {
 	return newApiError(http.StatusBadRequest, fmt.Errorf("bad path param, %s", name))
 }
 
-func notFound(id int, name string) ApiError {
+func NotFound(id int, name string) ApiError {
 	return newApiError(http.StatusNotFound, fmt.Errorf("%s with id %v not found in database", name, id))
 }

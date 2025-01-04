@@ -22,11 +22,11 @@ func NewUserService(userStore store.UserStore) *UserService {
 	}
 }
 
-func (s *UserService) Register(payload *types.CreateUserRequest) error {
+func (s *UserService) Register(payload *types.CreateUserPayload) error {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return fmt.Errorf("failed to hash password: %v", err)
+		return types.ServiceError(fmt.Errorf("failed to hash password: %v", err))
 	}
 
 	user := &store.User{
@@ -37,25 +37,25 @@ func (s *UserService) Register(payload *types.CreateUserRequest) error {
 	}
 
 	if err := s.userStore.Create(context.Background(), user); err != nil {
-		return fmt.Errorf("failed to create user: %v", err)
+		return types.DatabaseError(err)
 	}
 
 	return nil
 }
 
-func (s *UserService) Login(payload *types.LoginRequest) (string, error) {
+func (s *UserService) Login(payload *types.LoginPayload) (string, error) {
 	user, err := s.userStore.GetByUsername(context.Background(), payload.Username)
 	if err != nil {
-		return "", err
+		return "", types.DatabaseError(err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.Password, []byte(payload.Password)); err != nil {
-		return "", fmt.Errorf("invalid password: %v", err)
+		return "", types.Unauthorized("invalid password")
 	}
 
 	token, err := generateJWT(user)
 	if err != nil {
-		return "", fmt.Errorf("failed to generate JWT: %v", err)
+		return "", types.ServiceError(err)
 	}
 
 	return token, nil
@@ -64,9 +64,9 @@ func (s *UserService) Login(payload *types.LoginRequest) (string, error) {
 func (s *UserService) GetByID(id int) (*store.User, error) {
 	user, err := s.userStore.GetByID(context.Background(), id)
 	if err != nil {
-		return nil, err
+		return nil, types.DatabaseError(err)
 	}
-	return user, err
+	return user, nil
 }
 
 func generateJWT(user *store.User) (string, error) {
@@ -81,7 +81,7 @@ func generateJWT(user *store.User) (string, error) {
 
 	signedToken, err := token.SignedString(config.SecretKey)
 	if err != nil {
-		return "", err
+		return "", types.ServiceError(err)
 	}
 
 	return signedToken, nil
@@ -89,7 +89,7 @@ func generateJWT(user *store.User) (string, error) {
 
 func (s *UserService) Delete(id int) error {
 	if err := s.userStore.Delete(context.Background(), id); err != nil {
-		return fmt.Errorf("failed to delete user: %v", err)
+		return types.DatabaseError(err)
 	}
 
 	return nil
@@ -98,7 +98,7 @@ func (s *UserService) Delete(id int) error {
 func (s *UserService) Update(payload *types.UpdateUserPayload, id int) error {
 	user, err := s.userStore.GetByID(context.Background(), id)
 	if err != nil {
-		return fmt.Errorf("failed to get user: %v", err)
+		return types.DatabaseError(fmt.Errorf("failed to get user: %v", err))
 	}
 
 	if payload.Email != "" {
@@ -110,7 +110,7 @@ func (s *UserService) Update(payload *types.UpdateUserPayload, id int) error {
 	}
 
 	if err := s.userStore.Update(context.Background(), user); err != nil {
-		return fmt.Errorf("failed to update user: %v", err)
+		return types.DatabaseError(fmt.Errorf("failed to update user: %v", err))
 	}
 
 	return nil

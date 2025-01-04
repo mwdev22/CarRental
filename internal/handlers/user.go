@@ -42,14 +42,14 @@ func (h *UserHandler) RegisterRoutes() {
 }
 
 func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) error {
-	var payload types.CreateUserRequest
+	var payload types.CreateUserPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
-		return invalidJSON(err)
+		return types.InvalidJSON(err)
 	}
 
 	err := h.user.Register(&payload)
 	if err != nil {
-		return serviceError(err)
+		return err
 	}
 
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
@@ -58,13 +58,13 @@ func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) err
 }
 
 func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error {
-	var payload types.LoginRequest
+	var payload types.LoginPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
-		return invalidJSON(err)
+		return types.InvalidJSON(err)
 	}
 	token, err := h.user.Login(&payload)
 	if err != nil {
-		return serviceError(err)
+		return err
 	}
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
 		"message": "user logged in successfully!",
@@ -75,15 +75,15 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) error {
 	userID := r.PathValue("id")
 	if userID == "" {
-		return badPathParameter("id")
+		return types.BadPathParameter("id")
 	}
 	userIDInt, err := strconv.Atoi(userID)
 	if err != nil {
-		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+		return types.BadPathParameter("id")
 	}
 	user, err := h.user.GetByID(userIDInt)
 	if err != nil {
-		return serviceError(err)
+		return err
 	}
 
 	return types.WriteJSON(w, http.StatusOK, user)
@@ -93,20 +93,20 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 	idFromToken := r.Context().Value(userIdKey)
 	userID := r.PathValue("id")
 	if userID == "" {
-		return badPathParameter("id")
+		return types.BadPathParameter("id")
 	}
 	userIDInt, err := strconv.Atoi(userID)
 	if err != nil {
-		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+		return types.BadPathParameter("id")
 	}
 
 	if idFromToken != nil && idFromToken != userIDInt {
-		return unauthorized("user can only delete their own profile")
+		return types.Unauthorized("user can only delete their own profile")
 	}
 
 	err = h.user.Delete(userIDInt)
 	if err != nil {
-		return serviceError(err)
+		return err
 	}
 
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
@@ -119,25 +119,25 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 
 	userID := r.PathValue("id")
 	if userID == "" {
-		return badPathParameter("id")
+		return types.BadPathParameter("id")
 	}
 	userIDInt, err := strconv.Atoi(userID)
 	if err != nil {
-		return newApiError(http.StatusBadRequest, fmt.Errorf("invalid user id: %v", err))
+		return types.BadPathParameter("id")
 	}
 
 	if idFromToken != nil && idFromToken != userIDInt {
-		return unauthorized("user can only update their own profile")
+		return types.Unauthorized("user can only update their own profile")
 	}
 
 	var payload types.UpdateUserPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
-		return invalidJSON(err)
+		return types.InvalidJSON(err)
 	}
 
 	err = h.user.Update(&payload, userIDInt)
 	if err != nil {
-		return serviceError(err)
+		return err
 	}
 
 	return types.WriteJSON(w, http.StatusOK, map[string]string{

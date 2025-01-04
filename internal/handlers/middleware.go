@@ -27,7 +27,7 @@ func makeHandler(h apiFunc, logger *log.Logger) http.HandlerFunc {
 
 		if err := h(w, r); err != nil {
 			// assert the error from handler to known error type
-			if e, ok := err.(ApiError); ok {
+			if e, ok := err.(types.ApiError); ok {
 				types.WriteJSON(w, e.StatusCode, map[string]string{
 					"error": e.Error(),
 				})
