@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mwdev22/FileStorage/internal/handlers"
-	"github.com/mwdev22/FileStorage/internal/services"
-	"github.com/mwdev22/FileStorage/internal/store"
+	"github.com/mwdev22/CarRental/internal/handlers"
+	"github.com/mwdev22/CarRental/internal/services"
+	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )

@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/mwdev22/FileStorage/internal/config"
-	"github.com/mwdev22/FileStorage/internal/services"
-	"github.com/mwdev22/FileStorage/internal/types"
-	"github.com/mwdev22/FileStorage/internal/utils"
+	"github.com/mwdev22/CarRental/internal/config"
+	"github.com/mwdev22/CarRental/internal/services"
+	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 )
 
 type UserHandler struct {

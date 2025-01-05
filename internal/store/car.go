@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type CarRepository struct {
@@ -19,8 +19,8 @@ func NewCarRepo(db *sqlx.DB) *CarRepository {
 }
 
 func (r *CarRepository) Create(ctx context.Context, car *Car) error {
-	query := `INSERT INTO cars (make, model, year, color, registration_no, price_per_day) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err := r.DB.Exec(query, car.Make, car.Model, car.Year, car.Created)
+	query := `INSERT INTO car (make, model, year, color, registration_no, price_per_day) VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err := r.DB.Exec(query, car.Make, car.Model, car.Year, car.Color, car.RegistrationNo, car.PricePerDay)
 	if err != nil {
 		return err
 	}
@@ -29,7 +29,7 @@ func (r *CarRepository) Create(ctx context.Context, car *Car) error {
 
 func (r *CarRepository) GetByID(ctx context.Context, id int) (*Car, error) {
 	var car Car
-	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM cars WHERE id = $1`
+	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM car WHERE id = $1`
 	err := r.DB.Get(&car, query, id)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (r *CarRepository) GetByID(ctx context.Context, id int) (*Car, error) {
 }
 
 func (r *CarRepository) Update(ctx context.Context, id int, car *Car) error {
-	query := `UPDATE cars SET make = $1, model = $2, year = $3, color = $4, registration_no = $5, price_per_day = $6, updated = CURRENT_TIMESTAMP WHERE id = $7`
+	query := `UPDATE car SET make = $1, model = $2, year = $3, color = $4, registration_no = $5, price_per_day = $6, updated = CURRENT_TIMESTAMP WHERE id = $7`
 	_, err := r.DB.Exec(query, car.Make, car.Model, car.Year, car.Color, car.RegistrationNo, car.PricePerDay, id)
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (r *CarRepository) Update(ctx context.Context, id int, car *Car) error {
 }
 
 func (r *CarRepository) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Car, error) {
-	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM cars WHERE 1 = 1`
+	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM car WHERE 1 = 1`
 	args := make([]interface{}, 0)
 
 	// i use question marks because filters and their count are dynamic
@@ -77,7 +77,7 @@ func (r *CarRepository) GetBatch(ctx context.Context, filters []*types.QueryFilt
 }
 
 func (r *CarRepository) Delete(ctx context.Context, id int) error {
-	query := `DELETE FROM cars WHERE id = $1`
+	query := `DELETE FROM car WHERE id = $1`
 	res, err := r.DB.Exec(query, id)
 	if err != nil {
 		return err

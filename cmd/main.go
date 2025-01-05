@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/mwdev22/FileStorage/internal/api"
-	"github.com/mwdev22/FileStorage/internal/config"
-	"github.com/mwdev22/FileStorage/internal/database"
+	"github.com/mwdev22/CarRental/internal/api"
+	"github.com/mwdev22/CarRental/internal/config"
+	"github.com/mwdev22/CarRental/internal/database"
 )
 
 func main() {

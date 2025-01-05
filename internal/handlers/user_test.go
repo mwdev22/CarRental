@@ -6,45 +6,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/mwdev22/FileStorage/internal/config"
-	"github.com/mwdev22/FileStorage/internal/database"
-	"github.com/mwdev22/FileStorage/internal/services"
-	"github.com/mwdev22/FileStorage/internal/store"
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/store"
+	"github.com/mwdev22/CarRental/internal/types"
 )
-
-var testServer *httptest.Server
-var authHeader string
-
-func TestMain(m *testing.M) {
-	// changes the working directory to the project root, important for running migrations
-	_ = config.New()
-	// setup the test db
-	testDB, err := database.OpenTestSqlDB()
-	if err != nil {
-		panic("failed to connect to test database: " + err.Error())
-	}
-
-	// setup routes
-	userStore := store.NewUserRepo(testDB)
-	userService := services.NewUserService(userStore)
-	userHandler := NewUserHandler(http.NewServeMux(), userService)
-	userHandler.RegisterRoutes()
-
-	testServer = httptest.NewServer(userHandler.mux)
-	defer testServer.Close()
-
-	code := m.Run()
-
-	// delete the database after tests
-	os.Remove("./test.db")
-
-	os.Exit(code)
-}
 
 // test Register user route
 func TestRegister(t *testing.T) {

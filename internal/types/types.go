@@ -1,5 +1,9 @@
 package types
 
+type Handler interface {
+	RegisterRoutes()
+}
+
 type QueryOptions struct {
 	Limit        int
 	Offset       int

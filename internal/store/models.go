@@ -3,7 +3,7 @@ package store
 import (
 	"time"
 
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type User struct {

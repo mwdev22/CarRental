@@ -28,6 +28,8 @@ CREATE TABLE car (
 
 CREATE INDEX idx_car_company_id ON car(company_id);
 
+CREATE INDEX idx_car_year_model ON car(year, model);
+
 CREATE INDEX idx_car_make_model ON car(make, model);
 
 CREATE UNIQUE INDEX idx_car_registration_no ON car(registration_no);

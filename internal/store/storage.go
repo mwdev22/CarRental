@@ -3,7 +3,7 @@ package store
 import (
 	"context"
 
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type UserStore interface {
@@ -13,6 +13,13 @@ type UserStore interface {
 	GetByUsername(ctx context.Context, username string) (*User, error)
 	Delete(ctx context.Context, id int) error
 	Update(ctx context.Context, u *User) error
+}
+
+type CompanyStore interface {
+	Create(ctx context.Context, c *Company) error
+	GetByID(ctx context.Context, id int) (*Company, error)
+	Update(ctx context.Context, id int, c *Company) error
+	GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Company, error)
 }
 
 type CarStore interface {

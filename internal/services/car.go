@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/mwdev22/FileStorage/internal/store"
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/store"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type CarService struct {

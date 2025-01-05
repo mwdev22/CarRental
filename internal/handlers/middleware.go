@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/golang-jwt/jwt"
-	"github.com/mwdev22/FileStorage/internal/config"
-	"github.com/mwdev22/FileStorage/internal/types"
+	"github.com/mwdev22/CarRental/internal/config"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type ctxKey string
