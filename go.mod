@@ -9,7 +9,6 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/mwdev22/FileStorage v0.0.0-20250104204156-1622226d3bef
 	github.com/rs/cors v1.11.1
 	github.com/swaggo/http-swagger v1.3.4
 	golang.org/x/crypto v0.31.0

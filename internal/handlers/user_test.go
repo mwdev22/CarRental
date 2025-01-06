@@ -10,17 +10,24 @@ import (
 
 	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 )
 
 // test Register user route
 func TestRegister(t *testing.T) {
 	url := testServer.URL + "/register"
 
+	testUsername = utils.GenerateUniqueString("testuser")
+	testPassword = "testpassword"
+
 	payload := &types.CreateUserPayload{
-		Username: "testuser",
-		Password: "testpassword",
-		Email:    "email@blabla.com",
+		Username: testUsername,
+		Password: testPassword,
+		Email:    utils.GenerateUniqueString("email@blabla.com"),
+		Role:     types.UserTypeAdmin,
 	}
+
+	// setup for other
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
@@ -48,8 +55,8 @@ func TestLogin(t *testing.T) {
 	url := testServer.URL + "/login"
 
 	payload := &types.LoginPayload{
-		Username: "testuser",
-		Password: "testpassword",
+		Username: testUsername,
+		Password: testPassword,
 	}
 
 	payloadBytes, err := json.Marshal(payload)

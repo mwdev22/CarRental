@@ -45,7 +45,7 @@ vet:
 
 # Run tests (with optional flags)
 test:
-	$(TEST) $(PKG) -v $(GO_FLAGS)
+	$(TEST) $(PKG) $(GO_FLAGS)
 
 benchmark:
 	$(TEST) $(PKG) -bench . $(GO_FLAGS)

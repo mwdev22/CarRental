@@ -16,11 +16,12 @@ type User struct {
 }
 
 type Company struct {
-	ID      int       `json:"id" db:"id"`           // Unique ID for the company
-	Name    string    `json:"name" db:"name"`       // Company name
-	Email   string    `json:"email" db:"email"`     // Contact email
-	Phone   string    `json:"phone" db:"phone"`     // Contact phone number
-	Address string    `json:"address" db:"address"` // Address of the company
+	ID      int       `json:"id" db:"id"`             // Unique ID for the company
+	OwnerID int       `json:"owner_id" db:"owner_id"` // ID of the user who owns the company
+	Name    string    `json:"name" db:"name"`         // Company name
+	Email   string    `json:"email" db:"email"`       // Contact email
+	Phone   string    `json:"phone" db:"phone"`       // Contact phone number
+	Address string    `json:"address" db:"address"`   // Address of the company
 	Created time.Time `json:"created_at" db:"created_at"`
 	Updated time.Time `json:"updated_at" db:"updated_at"` // Last updated timestamp
 }

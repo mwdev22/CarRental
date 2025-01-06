@@ -1,9 +1,10 @@
 package types
 
 type CreateUserPayload struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username string   `json:"username"`
+	Password string   `json:"password"`
+	Email    string   `json:"email"`
+	Role     UserRole `json:"role"`
 }
 
 type LoginPayload struct {
@@ -14,6 +15,13 @@ type LoginPayload struct {
 type UpdateUserPayload struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
+}
+
+type CreateCompanyPayload struct {
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Phone   string `json:"phone"`
+	Address string `json:"address"`
 }
 
 type CreateCarPayload struct {

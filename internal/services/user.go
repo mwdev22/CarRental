@@ -33,7 +33,7 @@ func (s *UserService) Register(payload *types.CreateUserPayload) error {
 		Username: payload.Username,
 		Password: hashedPassword,
 		Email:    payload.Email,
-		Created:  time.Now(),
+		Role:     payload.Role,
 	}
 
 	if err := s.userStore.Create(context.Background(), user); err != nil {

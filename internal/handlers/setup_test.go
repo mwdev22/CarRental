@@ -12,10 +12,15 @@ import (
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 )
 
-var testServer *httptest.Server
-var authHeader string
+var (
+	testServer   *httptest.Server
+	authHeader   string
+	testUsername = utils.GenerateUniqueString("testuser")
+	testPassword = "testpassword"
+)
 
 func TestMain(m *testing.M) {
 	_ = config.New()
@@ -46,6 +51,10 @@ func initializeTests() (*httptest.Server, error) {
 	// stores and services
 	userStore := store.NewUserRepo(testDB)
 	userService := services.NewUserService(userStore)
+
+	companyStore := store.NewCompanyRepository(testDB)
+	companyService := services.NewCompanyService(companyStore)
+
 	carStore := store.NewCarRepo(testDB)
 	carService := services.NewCarService(carStore)
 
@@ -53,6 +62,7 @@ func initializeTests() (*httptest.Server, error) {
 	mux := http.NewServeMux()
 	handlers := []types.Handler{
 		NewUserHandler(mux, userService),
+		NewCompanyHandler(mux, companyService),
 		NewCarHandler(mux, carService),
 	}
 	for _, h := range handlers {

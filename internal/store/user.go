@@ -18,8 +18,8 @@ func NewUserRepo(db *sqlx.DB) *UserRepo {
 }
 
 func (r *UserRepo) Create(ctx context.Context, u *User) error {
-	query := `INSERT INTO users (username, password, email, created) VALUES ($1, $2, $3, $4)`
-	_, err := r.DB.Exec(query, u.Username, u.Password, u.Email, u.Created)
+	query := `INSERT INTO users (username, password, email, role) VALUES ($1, $2, $3, $4)`
+	_, err := r.DB.Exec(query, u.Username, u.Password, u.Email, u.Role)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %v", err)
 	}

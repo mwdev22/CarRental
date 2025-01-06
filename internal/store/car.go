@@ -6,6 +6,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 )
 
 type CarRepository struct {
@@ -48,24 +49,8 @@ func (r *CarRepository) Update(ctx context.Context, id int, car *Car) error {
 
 func (r *CarRepository) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Car, error) {
 	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM car WHERE 1 = 1`
-	args := make([]interface{}, 0)
 
-	// i use question marks because filters and their count are dynamic
-	// could be 1, 2, 3 etc through loop, but its not necessary complexity i think
-	for _, filter := range filters {
-		query += fmt.Sprintf(" AND %s %s ?", filter.Field, filter.Operator)
-		args = append(args, filter.Value)
-	}
-
-	if opts != nil {
-		query += ` ORDER BY ? ?`
-		query += ` LIMIT ? OFFSET ?`
-		args = append(args, opts.SortField, opts.SortDiretion, opts.Limit, opts.Offset)
-	} else {
-		query += ` ORDER BY id DESC`
-	}
-
-	// rebind query to postgres syntax
+	query, args := utils.BuildBatchQuery(query, filters, opts)
 	query = r.DB.Rebind(query)
 
 	var cars []Car
