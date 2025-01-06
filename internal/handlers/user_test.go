@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -27,74 +26,60 @@ func TestRegister(t *testing.T) {
 		Role:     types.UserTypeAdmin,
 	}
 
-	// setup for other
+	resp := sendPostRequest(url, payload, t)
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("failed to marshal payload: %v", err)
-	}
-
-	// Use testServer.Client() to send the POST request
-	resp, err := testServer.Client().Post(url, "application/json", bytes.NewReader(payloadBytes))
-	if err != nil {
-		t.Fatalf("failed to send POST request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
+	checkResponse(resp, http.StatusOK, t)
 }
 
 // test Login user route
 func TestLogin(t *testing.T) {
-	url := testServer.URL + "/login"
+	registerURL := testServer.URL + "/register"
 
-	payload := &types.LoginPayload{
+	registerPayload := &types.CreateUserPayload{
+		Username: testUsername,
+		Password: testPassword,
+		Email:    utils.GenerateUniqueString("email@blabla.com"),
+		Role:     types.UserTypeAdmin,
+	}
+
+	registerResp := sendPostRequest(registerURL, registerPayload, t)
+	defer registerResp.Body.Close()
+
+	if registerResp.StatusCode != http.StatusOK {
+		t.Fatalf("failed to register test user: expected status 200, got %d", registerResp.StatusCode)
+	}
+
+	loginURL := testServer.URL + "/login"
+
+	loginPayload := &types.LoginPayload{
 		Username: testUsername,
 		Password: testPassword,
 	}
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("failed to marshal payload: %v", err)
-	}
+	loginResp := sendPostRequest(loginURL, loginPayload, t)
+	defer loginResp.Body.Close()
 
-	resp, err := testServer.Client().Post(url, "application/json", bytes.NewReader(payloadBytes))
-	if err != nil {
-		t.Fatalf("failed to send POST request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
+	if loginResp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(loginResp.Body)
+		t.Fatalf("failed to log in: expected status 200, got %d, body: %s", loginResp.StatusCode, body)
 	}
 
 	var responseBody map[string]string
-	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
-		t.Fatalf("failed to parse response body: %v", err)
+	if err := json.NewDecoder(loginResp.Body).Decode(&responseBody); err != nil {
+		t.Fatalf("failed to parse login response body: %v", err)
 	}
 
 	token, ok := responseBody["token"]
 	if !ok {
-		t.Fatalf("token not found in response")
+		t.Fatalf("token not found in login response")
 	}
 
 	authHeader = "Bearer " + token
-
+	t.Logf("login successful, token obtained: %s", token)
 }
 
 // test update user route
 func TestUpdateUser(t *testing.T) {
-
 	// first check token to get user ID
 	claims, err := checkToken()
 	if err != nil {
@@ -115,33 +100,11 @@ func TestUpdateUser(t *testing.T) {
 		Email:    "newmail@gmail.com",
 	}
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("failed to marshal payload: %v", err)
-	}
-
-	req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(payloadBytes))
-	req.Header.Set("Authorization", authHeader)
-	if err != nil {
-		t.Fatalf("failed to create PUT request: %v", err)
-	}
-
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send PUT request: %v", err)
-	}
+	resp := sendPutRequest(url, payload, t)
 	defer resp.Body.Close()
+	body := checkResponse(resp, http.StatusOK, t)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("failed to read response body: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	t.Logf("update User response: %s", body)
+	t.Logf("update User response: %s", string(body))
 }
 
 func TestGetUser(t *testing.T) {
@@ -158,28 +121,12 @@ func TestGetUser(t *testing.T) {
 
 	url := testServer.URL + "/user/" + userIDstr
 
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	req.Header.Set("Authorization", authHeader)
-	if err != nil {
-		t.Fatalf("failed to create GET request: %v", err)
-	}
-
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send GET request: %v", err)
-	}
+	resp := sendGetRequest(url, t)
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("failed to read response body: %v", err)
-	}
+	body := checkResponse(resp, http.StatusOK, t)
 
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	t.Logf("get User response: %s", body)
+	t.Logf("get User response: %s", resp.Body)
 
 	var user *store.User
 	if err := json.Unmarshal(body, &user); err != nil {
@@ -212,64 +159,10 @@ func TestDeleteUser(t *testing.T) {
 	userIDstr := fmt.Sprintf("%.0f", userID)
 
 	url := testServer.URL + "/user/" + userIDstr
+	resp := sendDeleteRequest(url, t)
 
-	req, err := http.NewRequest(http.MethodDelete, url, nil)
-	req.Header.Set("Authorization", authHeader)
-	if err != nil {
-		t.Fatalf("failed to create DELETE request: %v", err)
-	}
-
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send DELETE request: %v", err)
-	}
 	defer resp.Body.Close()
+	respBody := checkResponse(resp, http.StatusOK, t)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("failed to read response body: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	t.Logf("delete User response: %s", body)
-}
-
-func checkToken() (map[string]interface{}, error) {
-	url := testServer.URL + "/check-token"
-
-	req, err := http.NewRequest(http.MethodPost, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create POST request to /check-token: %v", err)
-	}
-
-	req.Header.Set("Authorization", authHeader)
-
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send POST request to /check-token: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %v", err)
-		}
-		return nil, fmt.Errorf("token validation failed. Expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	var responseBody map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
-		return nil, fmt.Errorf("failed to parse response body: %v", err)
-	}
-
-	claims, ok := responseBody["data"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("expected 'data' field in response, got: %v", responseBody)
-	}
-
-	return claims, nil
+	t.Logf("delete User response: %s", respBody)
 }

@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"bytes"
 	"encoding/json"
-	"io"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -13,142 +12,73 @@ import (
 	"github.com/mwdev22/CarRental/internal/utils"
 )
 
+// helper function to create a companies
+func generateCompanies(count int, t *testing.T) ([]byte, []*types.CreateCompanyPayload) {
+	payloads := make([]*types.CreateCompanyPayload, 0)
+	var body []byte
+	for i := 0; i < count; i++ {
+		payload := &types.CreateCompanyPayload{
+			Name:    utils.GenerateUniqueString(fmt.Sprintf("company%v", i)),
+			Email:   utils.GenerateUniqueString("company_email"),
+			Phone:   utils.GenerateUniqueString("48"),
+			Address: utils.GenerateUniqueString("company_address"),
+		}
+		url := testServer.URL + "/company"
+
+		// Send PUT request to update company
+		resp := sendPostRequest(url, payload, t)
+		body = checkResponse(resp, http.StatusOK, t)
+		payloads = append(payloads, payload)
+	}
+	return body, payloads
+}
+
 func TestCreateCompany(t *testing.T) {
 	TestRegister(t)
 	TestLogin(t)
 
-	url := testServer.URL + "/company"
-
-	payload := &types.CreateCompanyPayload{
-		Name:    utils.GenerateUniqueString("company"),
-		Email:   utils.GenerateUniqueString("company_email"),
-		Phone:   utils.GenerateUniqueString("48"),
-		Address: utils.GenerateUniqueString("company_address"),
-	}
-
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("failed to marshal payload: %v", err)
-	}
-
-	req, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", authHeader)
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send POST request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
+	body, _ := generateCompanies(1, t)
 
 	var responseBody map[string]string
-	if err := json.NewDecoder(resp.Body).Decode(&responseBody); err != nil {
+	if err := json.Unmarshal(body, &responseBody); err != nil {
 		t.Fatalf("failed to parse response body: %v", err)
 	}
 }
 
 func TestGetCompanyByID(t *testing.T) {
-
 	url := testServer.URL + "/company/1"
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Authorization", authHeader)
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send GET request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
+	resp := sendGetRequest(url, t)
+	body := checkResponse(resp, http.StatusOK, t)
 
 	var company store.Company
-	if err := json.NewDecoder(resp.Body).Decode(&company); err != nil {
+	if err := json.Unmarshal(body, &company); err != nil {
 		t.Fatalf("failed to parse response body: %v", err)
 	}
 }
 
 func TestUpdateCompany(t *testing.T) {
-	url := testServer.URL + "/company/1"
-
 	payload := &types.UpdateCompanyPayload{
 		Name:    utils.GenerateUniqueString("company"),
 		Email:   utils.GenerateUniqueString("company_email"),
 		Phone:   utils.GenerateUniqueString("48"),
 		Address: utils.GenerateUniqueString("company_address"),
 	}
+	url := testServer.URL + "/company/1"
 
-	payloadBytes, err := json.Marshal(payload)
-	if err != nil {
-		t.Fatalf("failed to marshal payload: %v", err)
-	}
+	// send PUT request to update company
+	resp := sendPutRequest(url, payload, t)
+	checkResponse(resp, http.StatusOK, t)
 
-	req, err := http.NewRequest("PUT", url, bytes.NewReader(payloadBytes))
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", authHeader)
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send PUT request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	// after updating company, validate the changes
-
-	url = testServer.URL + "/company/1"
-
-	req, err = http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Authorization", authHeader)
-	resp, err = testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send GET request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
+	// after updating, retrieve the company to validate the changes
+	resp = sendGetRequest(url, t)
+	body := checkResponse(resp, http.StatusOK, t)
 
 	var company store.Company
-	if err := json.NewDecoder(resp.Body).Decode(&company); err != nil {
+	if err := json.Unmarshal(body, &company); err != nil {
 		t.Fatalf("failed to parse response body: %v", err)
 	}
 
+	// validate if the company was updated correctly
 	if company.Name != payload.Name {
 		t.Errorf("expected name %s, got %s", payload.Name, company.Name)
 	}
@@ -161,84 +91,23 @@ func TestUpdateCompany(t *testing.T) {
 	if company.Address != payload.Address {
 		t.Errorf("expected address %s, got %s", payload.Address, company.Address)
 	}
-
 }
 
 func TestGetCompanies(t *testing.T) {
-	// First, create some test company data using POST /company
-	companyNames := []string{
-		utils.GenerateUniqueString("company1"),
-		utils.GenerateUniqueString("company2"),
-		utils.GenerateUniqueString("company3"),
-	}
+	// create test companies
+	_, payloads := generateCompanies(10, t)
 
-	// Create companies by calling POST /company
-	for _, name := range companyNames {
-		payload := &types.CreateCompanyPayload{
-			Name:    name,
-			Email:   utils.GenerateUniqueString("company_email"),
-			Phone:   utils.GenerateUniqueString("48"),
-			Address: utils.GenerateUniqueString("company_address"),
-		}
-
-		payloadBytes, err := json.Marshal(payload)
-		if err != nil {
-			t.Fatalf("failed to marshal payload: %v", err)
-		}
-
-		url := testServer.URL + "/company"
-		req, err := http.NewRequest("POST", url, bytes.NewReader(payloadBytes))
-		if err != nil {
-			t.Fatalf("failed to create request: %v", err)
-		}
-		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", authHeader) // Assuming authHeader is set with a valid token
-
-		resp, err := testServer.Client().Do(req)
-		if err != nil {
-			t.Fatalf("failed to send POST request: %v", err)
-		}
-		defer resp.Body.Close()
-
-		// Check if POST request was successful
-		if resp.StatusCode != http.StatusOK {
-			body, err := io.ReadAll(resp.Body)
-			if err != nil {
-				t.Errorf("failed to read response body: %v", err)
-			}
-			t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-		}
-	}
-
-	// After inserting data, now test the GET /companies request
+	// test GET /companies with filters and pagination
 	url := testServer.URL + "/company/batch?name[sw]=company&email[ct]=company&phone[sw]=48&page=1&page_size=10&sort=name-asc"
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Authorization", authHeader) // Assuming authHeader is set with a valid token
-
-	resp, err := testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send GET request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
+	resp := sendGetRequest(url, t)
+	body := checkResponse(resp, http.StatusOK, t)
 
 	var companies []store.Company
-	if err := json.NewDecoder(resp.Body).Decode(&companies); err != nil {
+	if err := json.Unmarshal(body, &companies); err != nil {
 		t.Fatalf("failed to parse response body: %v", err)
 	}
 
-	if len(companies) != 4 {
+	if len(companies) != len(payloads) {
 		t.Errorf("expected 4 companies, got %d", len(companies))
 	}
 
@@ -248,10 +117,9 @@ func TestGetCompanies(t *testing.T) {
 		}
 	}
 
-	// Check if companies match the filter (name ending with "company" and containing "company", phone starts with "48")
 	for _, company := range companies {
 		if !strings.HasPrefix(company.Name, "company") {
-			t.Errorf("company name %s does not end with 'company'", company.Name)
+			t.Errorf("company name %s does not start with 'company'", company.Name)
 		}
 		if !strings.Contains(company.Email, "company") {
 			t.Errorf("company email %s does not contain 'company'", company.Email)
@@ -261,40 +129,21 @@ func TestGetCompanies(t *testing.T) {
 		}
 	}
 
+	// test filtering by name
 	url = testServer.URL + "/company/batch?name[sw]=company1"
+	resp = sendGetRequest(url, t)
+	body = checkResponse(resp, http.StatusOK, t)
 
-	req, err = http.NewRequest("GET", url, nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-	req.Header.Set("Authorization", authHeader) // Assuming authHeader is set with a valid token
-
-	resp, err = testServer.Client().Do(req)
-	if err != nil {
-		t.Fatalf("failed to send GET request: %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			t.Errorf("failed to read response body: %v", err)
-		}
-		t.Errorf("expected status 200, got %d, body: %s", resp.StatusCode, body)
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&companies); err != nil {
+	if err := json.Unmarshal(body, &companies); err != nil {
 		t.Fatalf("failed to parse response body: %v", err)
 	}
 
 	if len(companies) != 1 {
-		t.Errorf("expected 2 companies, got %d", len(companies))
-
-		for _, company := range companies {
-			if !strings.Contains(company.Name, "1") {
-				t.Errorf("company name %s does not contain '1'", company.Name)
-			}
+		t.Errorf("expected 1 company, got %d", len(companies))
+	}
+	for _, company := range companies {
+		if !strings.Contains(company.Name, "company1") {
+			t.Errorf("company name %s does not contain 'company1'", company.Name)
 		}
 	}
-
 }
