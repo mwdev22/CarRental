@@ -59,9 +59,17 @@ func (r *CompanyRepository) GetBatch(ctx context.Context, filters []*types.Query
 	query = r.DB.Rebind(query)
 
 	var companies []Company
-	err := r.DB.Select(&companies, query, args...)
+	rows, err := r.DB.Queryx(query, args...)
 	if err != nil {
 		return nil, err
+	}
+	for rows.Next() {
+		var company Company
+		err := rows.StructScan(&company)
+		if err != nil {
+			return nil, err
+		}
+		companies = append(companies, company)
 	}
 
 	return companies, nil

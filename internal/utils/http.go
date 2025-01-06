@@ -16,41 +16,41 @@ func ParseQueryFilters(r *http.Request) ([]*types.QueryFilter, error) {
 
 	for key, values := range query {
 		// skip pagination and sorting
-		if key == "page" || key == "page_size" || key == "sort" {
+		if len(values) < 1 || key == "page" || key == "page_size" || key == "sort" {
 			continue
 		}
-
-		// loop over the filters and parse them for sql query
-		for _, v := range values {
-			valParts := strings.Split(v, "_")
-			var operatorKey string
-			value := valParts[0]
-			// if not operator provided, default is eq ---> =
-			if len(valParts) != 2 {
-				operatorKey = "eq"
-			} else {
-				operatorKey = valParts[1]
-			}
-
-			operator, ok := types.OperatorMap[operatorKey]
-			if !ok {
-				return nil, types.BadRequest(fmt.Sprintf("invalid operator: %s", operatorKey))
-			}
-			// if operator is LIKE, we need to add % to the value, for proper sql query
-			if operator == "LIKE" {
-				switch operatorKey {
-				case "sw":
-					value = value + "%"
-				case "ew":
-					value = "%" + value
-				case "ct":
-					value = "%" + value + "%"
+		if strings.Contains(key, "[") && strings.HasSuffix(key, "]") {
+			// scrape field and operator from key
+			// field[gt] --> field, gt
+			field := key[:strings.Index(key, "[")]
+			operatorKey := key[strings.Index(key, "[")+1 : len(key)-1]
+			if operator, ok := types.OperatorMap[operatorKey]; ok {
+				//
+				value := values[0]
+				if operator == "LIKE" {
+					switch operatorKey {
+					case "sw":
+						value = value + "%"
+					case "ew":
+						value = "%" + value
+					case "ct":
+						value = "%" + value + "%"
+					}
 				}
+				filters = append(filters, &types.QueryFilter{
+					Field:    field,
+					Operator: operator,
+					Value:    value,
+				})
+			} else {
+				return nil, types.BadQueryParameter(fmt.Sprintf("Invalid operator in filter: %s", operatorKey))
 			}
+		} else {
+			// default for not provided operator
 			filters = append(filters, &types.QueryFilter{
 				Field:    key,
-				Operator: operator,
-				Value:    value,
+				Operator: "=",
+				Value:    values[0],
 			})
 		}
 	}
@@ -65,7 +65,7 @@ func ParseQueryOptions(r *http.Request) (*types.QueryOptions, error) {
 	opts := &types.QueryOptions{
 		Limit:        10,
 		Offset:       0,
-		SortField:    "created_at",
+		SortField:    "created",
 		SortDiretion: "asc",
 	}
 

@@ -16,11 +16,12 @@ func BuildBatchQuery(query string, filters []*types.QueryFilter, opts *types.Que
 	}
 
 	if opts != nil {
-		query += ` ORDER BY ? ?`
+		query += fmt.Sprintf(` ORDER BY %s %s`, opts.SortField, opts.SortDiretion)
 		query += ` LIMIT ? OFFSET ?`
-		args = append(args, opts.SortField, opts.SortDiretion, opts.Limit, opts.Offset)
+		args = append(args, opts.Limit, opts.Offset)
 	} else {
 		query += ` ORDER BY id DESC`
 	}
+
 	return query, args
 }

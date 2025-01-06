@@ -34,10 +34,10 @@ func (h *CompanyHandler) RegisterRoutes() {
 	// check for allowed operators in utils/handlers.go
 	// for example: get the first 10 companies with name ends with "company" and
 	// email containing "company" and phone starts with "48" order by name ascending
-	// you pass params like {field}={value}_{operator}
+	// you pass params like {field}[{operator}]={value}
 	// sorting like sort={field}-{direction}
-	// GET /companies?page=1&page_size=10&sort=name-asc&name=company_ew&email=company_ct&phone=48_ct
-	h.mux.HandleFunc("GET /companies", roleMiddleware(h.handleGetCopmanies, types.UserTypeCompanyOwner, logger))
+	// GET /companies?page=1&page_size=10&sort=name-asc&name[eq]=company&email[ct]=company&phone[sw]=48
+	h.mux.HandleFunc("GET /company/batch", roleMiddleware(h.handleGetCopmanies, types.UserTypeCompanyOwner, logger))
 }
 
 func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Request) error {
