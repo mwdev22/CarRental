@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 )
 
 func ParseJSON(r *http.Request, payload any) error {
@@ -33,12 +32,4 @@ func WriteZIP(w http.ResponseWriter, zippedBuff []byte, fileName string) error {
 
 	_, err := w.Write(zippedBuff)
 	return err
-}
-
-func ParseBool(value string) bool {
-	v, err := strconv.Atoi(value)
-	if err != nil {
-		return false
-	}
-	return v != 0
 }

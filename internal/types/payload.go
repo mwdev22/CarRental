@@ -24,6 +24,13 @@ type CreateCompanyPayload struct {
 	Address string `json:"address"`
 }
 
+type UpdateCompanyPayload struct {
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Phone   string `json:"phone"`
+	Address string `json:"address"`
+}
+
 type CreateCarPayload struct {
 	Make           string  `json:"make"`
 	Model          string  `json:"model"`

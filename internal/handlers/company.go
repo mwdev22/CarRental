@@ -29,6 +29,15 @@ func (h *CompanyHandler) RegisterRoutes() {
 	}
 	h.mux.HandleFunc("POST /company", roleMiddleware(h.handleCreateCompany, types.UserTypeCompanyOwner, logger))
 	h.mux.HandleFunc("GET /company/{id}", roleMiddleware(h.handleGetCompanyByID, types.UserTypeCompanyOwner, logger))
+	h.mux.HandleFunc("PUT /company/{id}", roleMiddleware(h.handleUpdateCompany, types.UserTypeCompanyOwner, logger))
+
+	// check for allowed operators in utils/handlers.go
+	// for example: get the first 10 companies with name ends with "company" and
+	// email containing "company" and phone starts with "48" order by name ascending
+	// you pass params like {field}={value}_{operator}
+	// sorting like sort={field}-{direction}
+	// GET /companies?page=1&page_size=10&sort=name-asc&name=company_ew&email=company_ct&phone=48_ct
+	h.mux.HandleFunc("GET /companies", roleMiddleware(h.handleGetCopmanies, types.UserTypeCompanyOwner, logger))
 }
 
 func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Request) error {
@@ -62,4 +71,48 @@ func (h *CompanyHandler) handleGetCompanyByID(w http.ResponseWriter, r *http.Req
 	}
 
 	return types.WriteJSON(w, http.StatusOK, company)
+}
+
+func (h *CompanyHandler) handleUpdateCompany(w http.ResponseWriter, r *http.Request) error {
+	companyId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		return types.BadPathParameter("id")
+	}
+
+	var payload types.UpdateCompanyPayload
+	if err := types.ParseJSON(r, &payload); err != nil {
+		return types.InvalidJSON(err)
+	}
+
+	userId, ok := r.Context().Value(userIdKey).(int)
+	if !ok {
+		return types.Unauthorized("user id not found in token")
+	}
+
+	if err := h.company.Update(companyId, userId, &payload); err != nil {
+		return err
+	}
+
+	return types.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "company updated successfully!",
+	})
+}
+
+func (h *CompanyHandler) handleGetCopmanies(w http.ResponseWriter, r *http.Request) error {
+	filters, err := utils.ParseQueryFilters(r)
+	if err != nil {
+		return err
+	}
+
+	opts, err := utils.ParseQueryOptions(r)
+	if err != nil {
+		return err
+	}
+
+	companies, err := h.company.GetAll(filters, opts)
+	if err != nil {
+		return err
+	}
+
+	return types.WriteJSON(w, http.StatusOK, companies)
 }

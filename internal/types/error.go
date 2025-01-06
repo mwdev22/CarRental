@@ -53,6 +53,14 @@ func BadPathParameter(name string) ApiError {
 	return newApiError(http.StatusBadRequest, fmt.Errorf("bad path param, %s", name))
 }
 
-func NotFound(id int, name string) ApiError {
-	return newApiError(http.StatusNotFound, fmt.Errorf("%s with id %v not found in database", name, id))
+func BadRequest(msg any) ApiError {
+	return newApiError(http.StatusBadRequest, fmt.Errorf("bad request: %s", msg))
+}
+
+func InternalServerError(msg string) ApiError {
+	return newApiError(http.StatusInternalServerError, fmt.Errorf("internal server error: %s", msg))
+}
+
+func NotFound(msg string) ApiError {
+	return newApiError(http.StatusNotFound, fmt.Errorf("not found: %s", msg))
 }

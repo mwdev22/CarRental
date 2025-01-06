@@ -13,7 +13,7 @@ type QueryOptions struct {
 
 type FilterOperators map[string]string
 
-var SortOperatorsMap = FilterOperators{
+var OperatorMap = FilterOperators{
 	"eq":  "=",
 	"neq": "!=",
 	"gt":  ">",

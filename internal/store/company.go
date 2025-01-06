@@ -41,10 +41,10 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*Company, erro
 	return &company, nil
 }
 
-func (r *CompanyRepository) Update(ctx context.Context, id int, company *Company) error {
+func (r *CompanyRepository) Update(ctx context.Context, company *Company) error {
 	query := `UPDATE company SET name = $1, email = $2, phone = $3, address = $4 WHERE id = $5`
 
-	_, err := r.DB.Exec(query, company.Name, company.Email, company.Phone, company.Address, id)
+	_, err := r.DB.Exec(query, company.Name, company.Email, company.Phone, company.Address, company.ID)
 	if err != nil {
 		return err
 	}
