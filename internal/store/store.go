@@ -19,6 +19,7 @@ type CompanyStore interface {
 	Create(ctx context.Context, c *Company) error
 	GetByID(ctx context.Context, id int) (*Company, error)
 	Update(ctx context.Context, c *Company) error
+	Delete(ctx context.Context, id int) error
 	GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Company, error)
 }
 

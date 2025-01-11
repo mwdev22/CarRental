@@ -38,7 +38,7 @@ func (s *CompanyService) Create(payload *types.CreateCompanyPayload, ownerId int
 func (s *CompanyService) GetByID(id int) (*store.Company, error) {
 	company, err := s.companyStore.GetByID(context.Background(), id)
 	if err != nil {
-		return nil, types.DatabaseError(fmt.Errorf("failed to get company by id"))
+		return nil, err
 	}
 
 	return company, nil
@@ -47,7 +47,7 @@ func (s *CompanyService) GetByID(id int) (*store.Company, error) {
 func (s *CompanyService) Update(id int, userId int, payload *types.UpdateCompanyPayload) error {
 	company, err := s.companyStore.GetByID(context.Background(), id)
 	if err != nil {
-		return types.DatabaseError(fmt.Errorf("failed to get company by id"))
+		return err
 	}
 
 	if company.OwnerID != userId {
@@ -60,7 +60,24 @@ func (s *CompanyService) Update(id int, userId int, payload *types.UpdateCompany
 	company.Address = payload.Address
 
 	if err := s.companyStore.Update(context.Background(), company); err != nil {
-		return types.DatabaseError(fmt.Errorf("failed to update company"))
+		return err
+	}
+
+	return nil
+}
+
+func (cs *CompanyService) Delete(id int, userId int) error {
+	company, err := cs.companyStore.GetByID(context.Background(), id)
+	if err != nil {
+		return err
+	}
+
+	if company.OwnerID != userId {
+		return types.Unauthorized(fmt.Sprintf("user isnt the owner of the company with id %v", id))
+	}
+
+	if err := cs.companyStore.Delete(context.Background(), id); err != nil {
+		return err
 	}
 
 	return nil

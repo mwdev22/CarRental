@@ -30,6 +30,7 @@ func (h *CompanyHandler) RegisterRoutes() {
 	h.mux.HandleFunc("POST /company", roleMiddleware(h.handleCreateCompany, types.UserTypeCompanyOwner, logger))
 	h.mux.HandleFunc("GET /company/{id}", roleMiddleware(h.handleGetCompanyByID, types.UserTypeCompanyOwner, logger))
 	h.mux.HandleFunc("PUT /company/{id}", roleMiddleware(h.handleUpdateCompany, types.UserTypeCompanyOwner, logger))
+	h.mux.HandleFunc("DELETE /company/{id}", roleMiddleware(h.handleDeleteCompany, types.UserTypeCompanyOwner, logger))
 
 	// check for allowed operators in utils/handlers.go
 	// for example: get the first 10 companies with name ends with "company" and
@@ -95,6 +96,26 @@ func (h *CompanyHandler) handleUpdateCompany(w http.ResponseWriter, r *http.Requ
 
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
 		"message": "company updated successfully!",
+	})
+}
+
+func (h *CompanyHandler) handleDeleteCompany(w http.ResponseWriter, r *http.Request) error {
+	companyId, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		return types.BadPathParameter("id")
+	}
+
+	userId, ok := r.Context().Value(userIdKey).(int)
+	if !ok {
+		return types.Unauthorized("user id not found in token")
+	}
+
+	if err := h.company.Delete(companyId, userId); err != nil {
+		return err
+	}
+
+	return types.WriteJSON(w, http.StatusOK, map[string]string{
+		"message": "company deleted successfully!",
 	})
 }
 

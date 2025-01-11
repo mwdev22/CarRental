@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type UserRepo struct {
@@ -64,9 +65,12 @@ func (r *UserRepo) Delete(ctx context.Context, id int) error {
 
 func (r *UserRepo) Update(ctx context.Context, u *User) error {
 	query := `UPDATE users SET username = $1, email = $2 WHERE id = $3`
-	_, err := r.DB.Exec(query, u.Username, u.Email, u.ID)
+	rows, err := r.DB.Exec(query, u.Username, u.Email, u.ID)
 	if err != nil {
-		return fmt.Errorf("failed to update user: %v", err)
+		return types.DatabaseError(fmt.Errorf("failed to update user: %v", err))
+	}
+	if count, _ := rows.RowsAffected(); count == 0 {
+		return types.NotFound("company not found")
 	}
 	return nil
 }

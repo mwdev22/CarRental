@@ -93,6 +93,17 @@ func TestUpdateCompany(t *testing.T) {
 	}
 }
 
+func TestDeleteCompany(t *testing.T) {
+	url := testServer.URL + "/company/1"
+	resp := sendDeleteRequest(url, t)
+	checkResponse(resp, http.StatusOK, t)
+
+	// try to retrieve the company to validate if it was deleted
+	resp = sendGetRequest(url, t)
+	checkResponse(resp, http.StatusNotFound, t)
+
+}
+
 func TestGetCompanies(t *testing.T) {
 	// create test companies
 	_, payloads := generateCompanies(10, t)
@@ -108,7 +119,7 @@ func TestGetCompanies(t *testing.T) {
 	}
 
 	if len(companies) != len(payloads) {
-		t.Errorf("expected 4 companies, got %d", len(companies))
+		t.Errorf("expected %v companies, got %v", len(payloads), len(companies))
 	}
 
 	for i := 1; i < len(companies); i++ {

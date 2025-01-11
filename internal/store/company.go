@@ -2,6 +2,8 @@ package store
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/mwdev22/CarRental/internal/types"
@@ -35,6 +37,9 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*Company, erro
 
 	err := r.DB.Get(&company, query, id)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, types.NotFound("company not found")
+		}
 		return nil, err
 	}
 
@@ -44,9 +49,28 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*Company, erro
 func (r *CompanyRepository) Update(ctx context.Context, company *Company) error {
 	query := `UPDATE company SET name = $1, email = $2, phone = $3, address = $4 WHERE id = $5`
 
-	_, err := r.DB.Exec(query, company.Name, company.Email, company.Phone, company.Address, company.ID)
+	rows, err := r.DB.Exec(query, company.Name, company.Email, company.Phone, company.Address, company.ID)
 	if err != nil {
 		return err
+	}
+
+	if count, _ := rows.RowsAffected(); count == 0 {
+		return types.NotFound("company not found")
+	}
+
+	return nil
+}
+
+func (r *CompanyRepository) Delete(ctx context.Context, id int) error {
+	query := `DELETE FROM company WHERE id = $1`
+
+	rows, err := r.DB.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	if count, _ := rows.RowsAffected(); count == 0 {
+		return types.NotFound("company not found")
 	}
 
 	return nil
