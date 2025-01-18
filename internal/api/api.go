@@ -9,7 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mwdev22/CarRental/internal/handlers"
 	"github.com/mwdev22/CarRental/internal/services"
-	"github.com/mwdev22/CarRental/internal/store"
+	"github.com/mwdev22/CarRental/internal/store/postgres"
 	"github.com/mwdev22/CarRental/internal/types"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -43,11 +43,11 @@ func (a *api) Start() error {
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// --- STORAGE AND SERVICES ---
-	userStore := store.NewUserRepo(a.db)
+	userStore := postgres.NewUserRepo(a.db)
 	userService := services.NewUserService(userStore)
-	carStore := store.NewCarRepo(a.db)
+	carStore := postgres.NewCarRepository(a.db)
 	carService := services.NewCarService(carStore)
-	companyStore := store.NewCompanyRepository(a.db)
+	companyStore := postgres.NewCompanyRepository(a.db)
 	companyService := services.NewCompanyService(companyStore)
 
 	// --- MAIN ROUTES ---

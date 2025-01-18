@@ -20,7 +20,7 @@ func NewCompanyService(companyStore store.CompanyStore) *CompanyService {
 }
 
 func (s *CompanyService) Create(payload *types.CreateCompanyPayload, ownerId int) error {
-	company := &store.Company{
+	company := &types.Company{
 		Name:    payload.Name,
 		OwnerID: ownerId,
 		Email:   payload.Email,
@@ -35,7 +35,7 @@ func (s *CompanyService) Create(payload *types.CreateCompanyPayload, ownerId int
 	return nil
 }
 
-func (s *CompanyService) GetByID(id int) (*store.Company, error) {
+func (s *CompanyService) GetByID(id int) (*types.Company, error) {
 	company, err := s.companyStore.GetByID(context.Background(), id)
 	if err != nil {
 		return nil, err
@@ -83,8 +83,7 @@ func (cs *CompanyService) Delete(id int, userId int) error {
 	return nil
 }
 
-func (s *CompanyService) GetAll(filters []*types.QueryFilter, opts *types.QueryOptions) ([]store.Company, error) {
-	log.Println(opts)
+func (s *CompanyService) GetAll(filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Company, error) {
 	for _, filter := range filters {
 		log.Println(filter)
 	}

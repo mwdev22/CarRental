@@ -1,4 +1,4 @@
-package store
+package postgres
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func NewCompanyRepository(db *sqlx.DB) *CompanyRepository {
 	}
 }
 
-func (r *CompanyRepository) Create(ctx context.Context, company *Company) error {
+func (r *CompanyRepository) Create(ctx context.Context, company *types.Company) error {
 	query := `INSERT INTO company (owner_id, name, email, phone, address) VALUES ($1, $2, $3, $4, $5)`
 
 	_, err := r.DB.Exec(query, company.OwnerID, company.Name, company.Email, company.Phone, company.Address)
@@ -31,8 +31,8 @@ func (r *CompanyRepository) Create(ctx context.Context, company *Company) error 
 	return nil
 }
 
-func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*Company, error) {
-	var company Company
+func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*types.Company, error) {
+	var company types.Company
 	query := `SELECT id, owner_id, name, email, phone, address FROM company WHERE id = $1`
 
 	err := r.DB.Get(&company, query, id)
@@ -46,7 +46,7 @@ func (r *CompanyRepository) GetByID(ctx context.Context, id int) (*Company, erro
 	return &company, nil
 }
 
-func (r *CompanyRepository) Update(ctx context.Context, company *Company) error {
+func (r *CompanyRepository) Update(ctx context.Context, company *types.Company) error {
 	query := `UPDATE company SET name = $1, email = $2, phone = $3, address = $4 WHERE id = $5`
 
 	rows, err := r.DB.Exec(query, company.Name, company.Email, company.Phone, company.Address, company.ID)
@@ -76,19 +76,19 @@ func (r *CompanyRepository) Delete(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *CompanyRepository) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Company, error) {
+func (r *CompanyRepository) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Company, error) {
 	query := `SELECT id, owner_id, name, email, phone, address FROM company WHERE 1 = 1`
 
 	query, args := utils.BuildBatchQuery(query, filters, opts)
 	query = r.DB.Rebind(query)
 
-	var companies []Company
+	var companies []types.Company
 	rows, err := r.DB.Queryx(query, args...)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		var company Company
+		var company types.Company
 		err := rows.StructScan(&company)
 		if err != nil {
 			return nil, err

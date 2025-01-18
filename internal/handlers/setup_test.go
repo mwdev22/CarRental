@@ -11,9 +11,8 @@ import (
 	"testing"
 
 	"github.com/mwdev22/CarRental/internal/config"
-	"github.com/mwdev22/CarRental/internal/database"
 	"github.com/mwdev22/CarRental/internal/services"
-	"github.com/mwdev22/CarRental/internal/store"
+	"github.com/mwdev22/CarRental/internal/store/inmemory"
 	"github.com/mwdev22/CarRental/internal/types"
 	"github.com/mwdev22/CarRental/internal/utils"
 )
@@ -42,23 +41,15 @@ func TestMain(m *testing.M) {
 }
 
 func initializeTests() (*httptest.Server, error) {
-	// change working directory to the project root
-	_ = config.New()
-
-	// setup the test DB
-	testDB, err := database.OpenTestSqlDB()
-	if err != nil {
-		return nil, err
-	}
 
 	// stores and services
-	userStore := store.NewUserRepo(testDB)
+	userStore := inmemory.NewUserRepo()
 	userService := services.NewUserService(userStore)
 
-	companyStore := store.NewCompanyRepository(testDB)
+	companyStore := inmemory.NewCompanyRepository()
 	companyService := services.NewCompanyService(companyStore)
 
-	carStore := store.NewCarRepo(testDB)
+	carStore := inmemory.NewCarRepository()
 	carService := services.NewCarService(carStore)
 
 	// handlers

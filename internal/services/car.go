@@ -19,13 +19,14 @@ func NewCarService(carStore store.CarStore) *CarService {
 }
 
 func (s *CarService) CreateCar(payload *types.CreateCarPayload) error {
-	car := &store.Car{
+	car := &types.Car{
 		Make:           payload.Make,
 		Model:          payload.Model,
 		Year:           payload.Year,
 		Color:          payload.Color,
 		RegistrationNo: payload.RegistrationNo,
 		PricePerDay:    payload.PricePerDay,
+		CompanyID:      payload.CompanyID,
 	}
 	if err := s.carStore.Create(context.Background(), car); err != nil {
 		return types.DatabaseError(fmt.Errorf("failed to create car: %v", err))
@@ -34,7 +35,7 @@ func (s *CarService) CreateCar(payload *types.CreateCarPayload) error {
 	return nil
 }
 
-func (s *CarService) GetByID(id int) (*store.Car, error) {
+func (s *CarService) GetByID(id int) (*types.Car, error) {
 	car, err := s.carStore.GetByID(context.Background(), id)
 	if err != nil {
 		return nil, types.DatabaseError(fmt.Errorf("failed to get car by id: %v", err))
@@ -55,7 +56,7 @@ func (s *CarService) UpdateCar(id int, payload *types.CreateCarPayload) error {
 	return nil
 }
 
-func (s *CarService) GetBatch(filters []*types.QueryFilter, opts *types.QueryOptions) ([]store.Car, error) {
+func (s *CarService) GetBatch(filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Car, error) {
 	cars, err := s.carStore.GetBatch(context.Background(), filters, opts)
 	if err != nil {
 		return nil, types.DatabaseError(fmt.Errorf("failed to get batch of cars: %v", err))

@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/types"
@@ -28,6 +29,7 @@ func (h *CarHandler) RegisterRoutes() {
 	}
 
 	h.mux.HandleFunc("POST /car", makeHandler(h.handleCreateCar, logger))
+	h.mux.HandleFunc("GET /car/{id}", makeHandler(h.handleGetCarByID, logger))
 
 }
 
@@ -45,4 +47,18 @@ func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) err
 	return types.WriteJSON(w, http.StatusOK, map[string]string{
 		"message": "car created successfully!",
 	})
+}
+
+func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) error {
+	id := r.PathValue("id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		return types.BadPathParameter("id")
+	}
+	car, err := h.car.GetByID(idInt)
+	if err != nil {
+		return err
+	}
+
+	return types.WriteJSON(w, http.StatusOK, car)
 }

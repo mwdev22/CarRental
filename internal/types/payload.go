@@ -38,6 +38,7 @@ type CreateCarPayload struct {
 	Color          string  `json:"color"`
 	RegistrationNo string  `json:"registration_no"`
 	PricePerDay    float64 `json:"price_per_day"`
+	CompanyID      int     `json:"company_id"`
 }
 
 type UpdateCarPayload struct {

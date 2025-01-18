@@ -1,4 +1,4 @@
-package store
+package postgres
 
 import (
 	"context"
@@ -9,27 +9,27 @@ import (
 	"github.com/mwdev22/CarRental/internal/utils"
 )
 
-type CarRepository struct {
+type CarRepositorySQL struct {
 	DB *sqlx.DB
 }
 
-func NewCarRepo(db *sqlx.DB) *CarRepository {
-	return &CarRepository{
+func NewCarRepository(db *sqlx.DB) *CarRepositorySQL {
+	return &CarRepositorySQL{
 		DB: db,
 	}
 }
 
-func (r *CarRepository) Create(ctx context.Context, car *Car) error {
-	query := `INSERT INTO car (make, model, year, color, registration_no, price_per_day) VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err := r.DB.Exec(query, car.Make, car.Model, car.Year, car.Color, car.RegistrationNo, car.PricePerDay)
+func (r *CarRepositorySQL) Create(ctx context.Context, car *types.Car) error {
+	query := `INSERT INTO car (company_id, make, model, year, color, registration_no, price_per_day) VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	_, err := r.DB.Exec(query, car.CompanyID, car.Make, car.Model, car.Year, car.Color, car.RegistrationNo, car.PricePerDay)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *CarRepository) GetByID(ctx context.Context, id int) (*Car, error) {
-	var car Car
+func (r *CarRepositorySQL) GetByID(ctx context.Context, id int) (*types.Car, error) {
+	var car types.Car
 	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM car WHERE id = $1`
 	err := r.DB.Get(&car, query, id)
 	if err != nil {
@@ -38,7 +38,7 @@ func (r *CarRepository) GetByID(ctx context.Context, id int) (*Car, error) {
 	return &car, nil
 }
 
-func (r *CarRepository) Update(ctx context.Context, id int, car *Car) error {
+func (r *CarRepositorySQL) Update(ctx context.Context, id int, car *types.Car) error {
 	query := `UPDATE car SET make = $1, model = $2, year = $3, color = $4, registration_no = $5, price_per_day = $6, updated = CURRENT_TIMESTAMP WHERE id = $7`
 	_, err := r.DB.Exec(query, car.Make, car.Model, car.Year, car.Color, car.RegistrationNo, car.PricePerDay, id)
 	if err != nil {
@@ -47,13 +47,13 @@ func (r *CarRepository) Update(ctx context.Context, id int, car *Car) error {
 	return nil
 }
 
-func (r *CarRepository) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]Car, error) {
+func (r *CarRepositorySQL) GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Car, error) {
 	query := `SELECT id, make, model, year, color, registration_no, price_per_day, created_at, updated_at FROM car WHERE 1 = 1`
 
 	query, args := utils.BuildBatchQuery(query, filters, opts)
 	query = r.DB.Rebind(query)
 
-	var cars []Car
+	var cars []types.Car
 	err := r.DB.Select(&cars, query, args...)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (r *CarRepository) GetBatch(ctx context.Context, filters []*types.QueryFilt
 	return cars, nil
 }
 
-func (r *CarRepository) Delete(ctx context.Context, id int) error {
+func (r *CarRepositorySQL) Delete(ctx context.Context, id int) error {
 	query := `DELETE FROM car WHERE id = $1`
 	res, err := r.DB.Exec(query, id)
 	if err != nil {

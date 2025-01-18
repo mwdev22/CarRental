@@ -29,7 +29,7 @@ func (s *UserService) Register(payload *types.CreateUserPayload) error {
 		return types.ServiceError(fmt.Errorf("failed to hash password: %v", err))
 	}
 
-	user := &store.User{
+	user := &types.User{
 		Username: payload.Username,
 		Password: hashedPassword,
 		Email:    payload.Email,
@@ -61,7 +61,7 @@ func (s *UserService) Login(payload *types.LoginPayload) (string, error) {
 	return token, nil
 }
 
-func (s *UserService) GetByID(id int) (*store.User, error) {
+func (s *UserService) GetByID(id int) (*types.User, error) {
 	user, err := s.userStore.GetByID(context.Background(), id)
 	if err != nil {
 		return nil, types.DatabaseError(err)
@@ -69,7 +69,7 @@ func (s *UserService) GetByID(id int) (*store.User, error) {
 	return user, nil
 }
 
-func generateJWT(user *store.User) (string, error) {
+func generateJWT(user *types.User) (string, error) {
 	claims := jwt.MapClaims{
 		"id":       user.ID,
 		"username": user.Username,

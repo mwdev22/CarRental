@@ -1,18 +1,16 @@
-package store
+package types
 
 import (
 	"time"
-
-	"github.com/mwdev22/CarRental/internal/types"
 )
 
 type User struct {
-	ID       int            `db:"id" json:"id"`
-	Username string         `db:"username" json:"username"`
-	Password []byte         `db:"password" json:"-"`
-	Email    string         `db:"email" json:"email"`
-	Role     types.UserRole `db:"role" json:"role"`
-	Created  time.Time      `db:"created" json:"-"`
+	ID       int       `db:"id" json:"id"`
+	Username string    `db:"username" json:"username"`
+	Password []byte    `db:"password" json:"-"`
+	Email    string    `db:"email" json:"email"`
+	Role     UserRole  `db:"role" json:"role"`
+	Created  time.Time `db:"created" json:"-"`
 }
 
 type Company struct {
@@ -28,9 +26,10 @@ type Company struct {
 
 type Car struct {
 	ID             int       `json:"id" db:"id"`
-	Make           string    `json:"make" db:"make"`   // Make (e.g., Toyota, Ford)
-	Model          string    `json:"model" db:"model"` // Model (e.g., Corolla, Mustang)
-	Year           int       `json:"year" db:"year"`   // Year of manufacture
+	CompanyID      int       `json:"company_id" db:"company_id"` // ID of the company that owns the car
+	Make           string    `json:"make" db:"make"`             // Make (e.g., Toyota, Ford)
+	Model          string    `json:"model" db:"model"`           // Model (e.g., Corolla, Mustang)
+	Year           int       `json:"year" db:"year"`             // Year of manufacture
 	Color          string    `json:"color" db:"color"`
 	RegistrationNo string    `json:"registration_no" db:"registration_no"` // Car registration number
 	PricePerDay    float64   `json:"price_per_day" db:"price_per_day"`

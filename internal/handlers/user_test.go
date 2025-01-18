@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/types"
 	"github.com/mwdev22/CarRental/internal/utils"
 )
@@ -128,7 +127,7 @@ func TestGetUser(t *testing.T) {
 
 	t.Logf("get User response: %s", resp.Body)
 
-	var user *store.User
+	var user *types.User
 	if err := json.Unmarshal(body, &user); err != nil {
 		t.Fatalf("failed to unmarshal response body: %v", err)
 	}
