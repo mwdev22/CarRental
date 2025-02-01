@@ -10,7 +10,7 @@ import (
 	"github.com/mwdev22/CarRental/internal/handlers"
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/store/postgres"
-	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -51,14 +51,10 @@ func (a *api) Start() error {
 	companyService := services.NewCompanyService(companyStore)
 
 	// --- MAIN ROUTES ---
-	handlers := []types.Handler{
-		handlers.NewUserHandler(mux, userService),
-		handlers.NewCompanyHandler(mux, companyService),
-		handlers.NewCarHandler(mux, carService),
-	}
-	for _, h := range handlers {
-		h.RegisterRoutes()
-	}
+
+	_ = handlers.NewUserHandler(mux, userService, utils.MakeLogger("user"))
+	_ = handlers.NewCarHandler(mux, carService, utils.MakeLogger("car"))
+	_ = handlers.NewCompanyHandler(mux, companyService, utils.MakeLogger("company"))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:      []string{"*"},

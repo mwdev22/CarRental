@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -12,8 +13,7 @@ import (
 
 	"github.com/mwdev22/CarRental/internal/config"
 	"github.com/mwdev22/CarRental/internal/services"
-	"github.com/mwdev22/CarRental/internal/store/inmemory"
-	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/store/mock"
 	"github.com/mwdev22/CarRental/internal/utils"
 )
 
@@ -43,26 +43,20 @@ func TestMain(m *testing.M) {
 func initializeTests() (*httptest.Server, error) {
 
 	// stores and services
-	userStore := inmemory.NewUserRepo()
+	userStore := mock.NewUserRepo()
 	userService := services.NewUserService(userStore)
 
-	companyStore := inmemory.NewCompanyRepository()
+	companyStore := mock.NewCompanyRepository()
 	companyService := services.NewCompanyService(companyStore)
 
-	carStore := inmemory.NewCarRepository()
+	carStore := mock.NewCarRepository()
 	carService := services.NewCarService(carStore)
 
 	// handlers
 	mux := http.NewServeMux()
-	handlers := []types.Handler{
-		NewUserHandler(mux, userService),
-		NewCompanyHandler(mux, companyService),
-		NewCarHandler(mux, carService),
-	}
-	for _, h := range handlers {
-		h.RegisterRoutes()
-	}
-
+	_ = NewUserHandler(mux, userService, log.Default())
+	_ = NewCompanyHandler(mux, companyService, log.Default())
+	_ = NewCarHandler(mux, carService, log.Default())
 	// setup the test server
 	testServer = httptest.NewServer(mux)
 	return testServer, nil

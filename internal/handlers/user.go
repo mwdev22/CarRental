@@ -11,26 +11,21 @@ import (
 	"github.com/mwdev22/CarRental/internal/config"
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/types"
-	"github.com/mwdev22/CarRental/internal/utils"
 )
 
 type UserHandler struct {
-	mux  *http.ServeMux
-	user *services.UserService
+	mux    *http.ServeMux
+	user   *services.UserService
+	logger *log.Logger
 }
 
-func NewUserHandler(mux *http.ServeMux, user *services.UserService) *UserHandler {
-	return &UserHandler{
-		mux:  mux,
-		user: user,
+func NewUserHandler(mux *http.ServeMux, user *services.UserService, logger *log.Logger) *UserHandler {
+	h := &UserHandler{
+		mux:    mux,
+		user:   user,
+		logger: logger,
 	}
-}
 
-func (h *UserHandler) RegisterRoutes() {
-	logger, err := utils.MakeLogger("user")
-	if err != nil {
-		log.Fatalf("failed to create logger: %v", err)
-	}
 	h.mux.HandleFunc("POST /register", makeHandler(h.handleRegister, logger))
 	h.mux.HandleFunc("POST /login", makeHandler(h.handleLogin, logger))
 	h.mux.HandleFunc("POST /check-token", makeHandler(h.handleCheckToken, logger))
@@ -38,6 +33,11 @@ func (h *UserHandler) RegisterRoutes() {
 	h.mux.HandleFunc("GET /user/{id}", authMiddleware(h.handleGetUser, logger))
 	h.mux.HandleFunc("DELETE /user/{id}", authMiddleware(h.handleDeleteUser, logger))
 	h.mux.HandleFunc("PUT /user/{id}", authMiddleware(h.handleUpdateUser, logger))
+
+	return h
+}
+
+func (h *UserHandler) RegisterRoutes() {
 
 }
 
@@ -135,7 +135,7 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 		return types.InvalidJSON(err)
 	}
 
-	err = h.user.Update(&payload, userIDInt)
+	err = h.user.Update(userIDInt, &payload)
 	if err != nil {
 		return err
 	}

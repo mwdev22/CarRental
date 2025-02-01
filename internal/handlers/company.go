@@ -13,20 +13,16 @@ import (
 type CompanyHandler struct {
 	mux     *http.ServeMux
 	company *services.CompanyService
+	logger  *log.Logger
 }
 
-func NewCompanyHandler(mux *http.ServeMux, company *services.CompanyService) *CompanyHandler {
-	return &CompanyHandler{
+func NewCompanyHandler(mux *http.ServeMux, company *services.CompanyService, logger *log.Logger) *CompanyHandler {
+	h := &CompanyHandler{
 		mux:     mux,
 		company: company,
+		logger:  logger,
 	}
-}
 
-func (h *CompanyHandler) RegisterRoutes() {
-	logger, err := utils.MakeLogger("company")
-	if err != nil {
-		log.Fatalf("failed to create logger: %v", err)
-	}
 	h.mux.HandleFunc("POST /company", roleMiddleware(h.handleCreateCompany, types.UserTypeCompanyOwner, logger))
 	h.mux.HandleFunc("GET /company/{id}", roleMiddleware(h.handleGetCompanyByID, types.UserTypeCompanyOwner, logger))
 	h.mux.HandleFunc("PUT /company/{id}", roleMiddleware(h.handleUpdateCompany, types.UserTypeCompanyOwner, logger))
@@ -39,6 +35,8 @@ func (h *CompanyHandler) RegisterRoutes() {
 	// sorting like sort={field}-{direction}
 	// GET /companies?page=1&page_size=10&sort=name-asc&name[eq]=company&email[ct]=company&phone[sw]=48
 	h.mux.HandleFunc("GET /company/batch", roleMiddleware(h.handleGetCopmanies, types.UserTypeCompanyOwner, logger))
+
+	return h
 }
 
 func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Request) error {

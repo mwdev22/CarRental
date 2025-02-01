@@ -95,7 +95,7 @@ func (s *UserService) Delete(id int) error {
 	return nil
 }
 
-func (s *UserService) Update(payload *types.UpdateUserPayload, id int) error {
+func (s *UserService) Update(id int, payload *types.UpdateUserPayload) error {
 	user, err := s.userStore.GetByID(context.Background(), id)
 	if err != nil {
 		return types.DatabaseError(fmt.Errorf("failed to get user: %v", err))
