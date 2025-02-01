@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"time"
 )
@@ -18,5 +19,5 @@ func MakeLogger(filename string) *log.Logger {
 }
 
 func GenerateUniqueString(base string) string {
-	return fmt.Sprintf("%s_%d", base, time.Now().UnixNano())
+	return fmt.Sprintf("%s_%d", base, time.Now().UnixNano()+int64(rand.Intn(1000)))
 }

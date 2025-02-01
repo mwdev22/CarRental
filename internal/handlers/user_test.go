@@ -34,9 +34,12 @@ func TestRegister(t *testing.T) {
 func TestLogin(t *testing.T) {
 	registerURL := testServer.URL + "/register"
 
+	userName := utils.GenerateUniqueString("testuser")
+	password := utils.GenerateUniqueString("password")
+
 	registerPayload := &types.CreateUserPayload{
-		Username: testUsername,
-		Password: testPassword,
+		Username: userName,
+		Password: password,
 		Email:    utils.GenerateUniqueString("email@blabla.com"),
 		Role:     types.UserTypeAdmin,
 	}
@@ -47,6 +50,9 @@ func TestLogin(t *testing.T) {
 	if registerResp.StatusCode != http.StatusOK {
 		t.Fatalf("failed to register test user: expected status 200, got %d", registerResp.StatusCode)
 	}
+
+	testUsername = userName
+	testPassword = password
 
 	loginURL := testServer.URL + "/login"
 

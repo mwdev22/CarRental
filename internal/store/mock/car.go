@@ -29,6 +29,12 @@ func (r *CarRepository) Create(ctx context.Context, car *types.Car) error {
 	car.ID = r.nextID
 	r.nextID++
 
+	for _, existingCar := range r.cars {
+		if existingCar.RegistrationNo == car.RegistrationNo {
+			return fmt.Errorf("car with registration number %s already exists", car.RegistrationNo)
+		}
+	}
+
 	car.Created = time.Now()
 	car.Updated = time.Now()
 
@@ -52,20 +58,18 @@ func (r *CarRepository) Update(ctx context.Context, id int, car *types.Car) erro
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	existingCar, exists := r.cars[id]
+	_, exists := r.cars[id]
 	if !exists {
 		return fmt.Errorf("car with id %d not found", id)
 	}
 
-	existingCar.Make = car.Make
-	existingCar.Model = car.Model
-	existingCar.Year = car.Year
-	existingCar.Color = car.Color
-	existingCar.RegistrationNo = car.RegistrationNo
-	existingCar.PricePerDay = car.PricePerDay
-	existingCar.Updated = time.Now()
+	for _, existingCar := range r.cars {
+		if existingCar.RegistrationNo == car.RegistrationNo {
+			return fmt.Errorf("car with registration number %s already exists", car.RegistrationNo)
+		}
+	}
 
-	r.cars[id] = existingCar
+	r.cars[id] = *car
 	return nil
 }
 

@@ -11,7 +11,9 @@ import (
 )
 
 func TestCreateCar(t *testing.T) {
-	TestCreateCompany(t)
+
+	TestLogin(t)
+
 	url := testServer.URL + "/car"
 
 	payload := &types.CreateCarPayload{

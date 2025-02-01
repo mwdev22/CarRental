@@ -20,7 +20,7 @@ import (
 var (
 	testServer   *httptest.Server
 	authHeader   string
-	testUsername = utils.GenerateUniqueString("testuser")
+	testUsername = utils.GenerateUniqueString("testuser2")
 	testPassword = "testpassword"
 )
 

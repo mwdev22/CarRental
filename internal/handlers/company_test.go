@@ -31,8 +31,6 @@ func generateCompanies(count int, t *testing.T) ([]byte, []*types.CreateCompanyP
 }
 
 func TestCreateCompany(t *testing.T) {
-	TestRegister(t)
-	TestLogin(t)
 
 	body, _ := generateCompanies(1, t)
 
@@ -43,7 +41,7 @@ func TestCreateCompany(t *testing.T) {
 }
 
 func TestGetCompanyByID(t *testing.T) {
-	url := testServer.URL + "/company/2"
+	url := testServer.URL + "/company/1"
 	resp := sendGetRequest(url, t)
 	body := checkResponse(resp, http.StatusOK, t)
 
@@ -60,7 +58,7 @@ func TestUpdateCompany(t *testing.T) {
 		Phone:   utils.GenerateUniqueString("48"),
 		Address: utils.GenerateUniqueString("company_address"),
 	}
-	url := testServer.URL + "/company/2"
+	url := testServer.URL + "/company/1"
 
 	// send PUT request to update company
 	resp := sendPutRequest(url, payload, t)
@@ -91,7 +89,7 @@ func TestUpdateCompany(t *testing.T) {
 }
 
 func TestDeleteCompany(t *testing.T) {
-	url := testServer.URL + "/company/2"
+	url := testServer.URL + "/company/1"
 	resp := sendDeleteRequest(url, t)
 	checkResponse(resp, http.StatusOK, t)
 

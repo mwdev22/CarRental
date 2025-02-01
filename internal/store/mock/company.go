@@ -2,6 +2,7 @@ package mock
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -24,6 +25,12 @@ func NewCompanyRepository() *CompanyRepository {
 func (r *CompanyRepository) Create(ctx context.Context, company *types.Company) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
+	for _, comcompany := range r.companies {
+		if comcompany.Name == company.Name {
+			return fmt.Errorf("company with name already exists")
+		}
+	}
 
 	company.ID = r.nextID
 	r.nextID++

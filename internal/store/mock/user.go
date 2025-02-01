@@ -25,9 +25,14 @@ func (r *UserRepo) Create(ctx context.Context, u *types.User) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	for _, user := range r.users {
+		if user.Username == u.Username {
+			return fmt.Errorf("user with username %s already exists", u.Username)
+		}
+	}
+
 	u.ID = r.nextID
 	r.nextID++
-
 	r.users[u.ID] = *u
 	return nil
 }

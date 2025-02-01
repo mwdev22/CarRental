@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/types"
@@ -43,11 +44,19 @@ func (s *CarService) GetByID(id int) (*types.Car, error) {
 	return car, nil
 }
 
-func (s *CarService) UpdateCar(id int, payload *types.CreateCarPayload) error {
+func (s *CarService) UpdateCar(id int, payload *types.UpdateCarPayload) error {
 	car, err := s.carStore.GetByID(context.Background(), id)
 	if err != nil {
 		return types.DatabaseError(fmt.Errorf("failed to get car by id: %v", err))
 	}
+
+	car.Make = payload.Make
+	car.Model = payload.Model
+	car.Year = payload.Year
+	car.Color = payload.Color
+	car.RegistrationNo = payload.RegistrationNo
+	car.PricePerDay = payload.PricePerDay
+	car.Updated = time.Now()
 
 	if err := s.carStore.Update(context.Background(), id, car); err != nil {
 		return types.DatabaseError(fmt.Errorf("failed to update car: %v", err))
