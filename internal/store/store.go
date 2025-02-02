@@ -27,5 +27,6 @@ type CarStore interface {
 	Create(ctx context.Context, car *types.Car) error
 	GetByID(ctx context.Context, id int) (*types.Car, error)
 	Update(ctx context.Context, id int, car *types.Car) error
+	Delete(ctx context.Context, id int) error
 	GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Car, error)
 }

@@ -128,7 +128,7 @@ func (h *CompanyHandler) handleGetCopmanies(w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	companies, err := h.company.GetAll(filters, opts)
+	companies, err := h.company.GetBatch(filters, opts)
 	if err != nil {
 		return err
 	}

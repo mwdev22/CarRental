@@ -230,4 +230,41 @@ func TestCarService(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("DeleteCar", func(t *testing.T) {
+		tests := []struct {
+			name        string
+			companyName string
+			expectError bool
+		}{
+			{
+				name:        "successful car deletion",
+				expectError: false,
+			},
+			{
+				name:        "car not found",
+				expectError: true,
+			},
+		}
+
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				err := carService.Delete(1)
+
+				if tt.expectError && err == nil {
+					t.Errorf("expected an error, got nil")
+				}
+				if !tt.expectError && err != nil {
+					t.Errorf("expected no error, got: %v", err)
+				}
+
+				if !tt.expectError {
+					_, err := carService.GetByID(1)
+					if err == nil {
+						t.Errorf("expected car to be deleted, but it still exists")
+					}
+				}
+			})
+		}
+	})
 }

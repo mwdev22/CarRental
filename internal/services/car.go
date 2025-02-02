@@ -65,6 +65,13 @@ func (s *CarService) UpdateCar(id int, payload *types.UpdateCarPayload) error {
 	return nil
 }
 
+func (s *CarService) Delete(id int) error {
+	if err := s.carStore.Delete(context.Background(), id); err != nil {
+		return types.DatabaseError(fmt.Errorf("failed to delete car: %v", err))
+	}
+	return nil
+}
+
 func (s *CarService) GetBatch(filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Car, error) {
 	cars, err := s.carStore.GetBatch(context.Background(), filters, opts)
 	if err != nil {

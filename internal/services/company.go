@@ -83,7 +83,7 @@ func (cs *CompanyService) Delete(id int, userId int) error {
 	return nil
 }
 
-func (s *CompanyService) GetAll(filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Company, error) {
+func (s *CompanyService) GetBatch(filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Company, error) {
 	for _, filter := range filters {
 		log.Println(filter)
 	}
