@@ -37,10 +37,13 @@ func NewUserHandler(mux *http.ServeMux, user *services.UserService, logger *log.
 	return h
 }
 
-func (h *UserHandler) RegisterRoutes() {
-
-}
-
+// @Summary Register a new user
+// @Description Registers a user using the provided payload
+// @Accept json
+// @Produce json
+// @Param payload body types.CreateUserPayload true "User registration details"
+// @Success 200 {object} map[string]string
+// @Router /register [post]
 func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) error {
 	var payload types.CreateUserPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
@@ -57,6 +60,14 @@ func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) err
 	})
 }
 
+// @Summary User login
+// @Description Authenticates a user and returns a token
+// @Accept json
+// @Produce json
+// @Param payload body types.LoginPayload true "User login details"
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} map[string]string
+// @Router /login [post]
 func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error {
 	var payload types.LoginPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
@@ -72,6 +83,13 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 	})
 }
 
+// @Summary Get user by ID
+// @Description Retrieves user details by ID
+// @Produce json
+// @Param id path int true "User ID"
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} types.User
+// @Router /user/{id} [get]
 func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) error {
 	userID := r.PathValue("id")
 	if userID == "" {
@@ -89,6 +107,12 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) erro
 	return types.WriteJSON(w, http.StatusOK, user)
 }
 
+// @Summary Delete a user
+// @Description Deletes a user by ID
+// @Param id path int true "User ID"
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} map[string]string
+// @Router /user/{id} [delete]
 func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) error {
 	idFromToken := r.Context().Value(userIdKey)
 	userID := r.PathValue("id")
@@ -113,10 +137,16 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 		"message": "user deleted successfully!"})
 }
 
+// @Summary Update a user
+// @Description Updates a user's profile
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} map[string]string
+// @Router /user/{id} [put]
 func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
-
 	idFromToken := r.Context().Value(userIdKey)
-
 	userID := r.PathValue("id")
 	if userID == "" {
 		return types.BadPathParameter("id")
@@ -145,6 +175,13 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 	})
 }
 
+// @Summary Check Token
+// @Description Retrieve user's token claims
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer Token"
+// @Success 200 {object} map[string]string
+// @Router /check-token [post]
 func (h *UserHandler) handleCheckToken(w http.ResponseWriter, r *http.Request) error {
 	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {

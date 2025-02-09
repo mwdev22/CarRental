@@ -1,0 +1,531 @@
+definitions:
+  types.Car:
+    properties:
+      color:
+        type: string
+      company_id:
+        description: ID of the company that owns the car
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      make:
+        description: Make (e.g., Toyota, Ford)
+        type: string
+      model:
+        description: Model (e.g., Corolla, Mustang)
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        description: Car registration number
+        type: string
+      updated_at:
+        description: Last updated timestamp
+        type: string
+      year:
+        description: Year of manufacture
+        type: integer
+    type: object
+  types.Company:
+    properties:
+      address:
+        description: Address of the company
+        type: string
+      created_at:
+        type: string
+      email:
+        description: Contact email
+        type: string
+      id:
+        description: Unique ID for the company
+        type: integer
+      name:
+        description: Company name
+        type: string
+      owner_id:
+        description: ID of the user who owns the company
+        type: integer
+      phone:
+        description: Contact phone number
+        type: string
+      updated_at:
+        description: Last updated timestamp
+        type: string
+    type: object
+  types.CreateCarPayload:
+    properties:
+      color:
+        type: string
+      company_id:
+        type: integer
+      make:
+        type: string
+      model:
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        type: string
+      year:
+        type: integer
+    type: object
+  types.CreateCompanyPayload:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  types.CreateUserPayload:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/types.UserRole'
+      username:
+        type: string
+    type: object
+  types.LoginPayload:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  types.UpdateCarPayload:
+    properties:
+      color:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        type: string
+      year:
+        type: integer
+    type: object
+  types.UpdateCompanyPayload:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  types.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        $ref: '#/definitions/types.UserRole'
+      username:
+        type: string
+    type: object
+  types.UserRole:
+    enum:
+    - 0
+    - 1
+    - 2
+    type: integer
+    x-enum-varnames:
+    - UserTypeAdmin
+    - UserTypeCompanyOwner
+    - UserTypeUser
+info:
+  contact: {}
+paths:
+  /cars:
+    get:
+      description: Retrieves a list of cars with optional filters
+      parameters:
+      - description: Filters for car retrieval
+        in: query
+        name: filters
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Car'
+            type: array
+      summary: Get cars
+    post:
+      consumes:
+      - application/json
+      description: Creates a new car record
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateCarPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a car
+  /cars/{id}:
+    delete:
+      description: Deletes a car by its ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete car by ID
+    get:
+      description: Retrieves a car by its ID
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Car'
+      summary: Get car by ID
+    put:
+      consumes:
+      - application/json
+      description: Updates a car's details
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated car data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateCarPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update car by ID
+  /check-token:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve user's token claims
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check Token
+  /companies:
+    get:
+      description: Retrieves a list of companies based on query filters and options
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Query filters
+        in: query
+        name: filters
+        type: object
+      - description: Query options
+        in: query
+        name: options
+        type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Company'
+            type: array
+      summary: Get a list of companies
+    post:
+      consumes:
+      - application/json
+      description: Creates a company using the provided payload
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateCompanyPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new company
+  /companies/{id}:
+    delete:
+      description: Deletes a company by ID
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a company
+    get:
+      description: Retrieves a company based on the provided ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Company'
+      summary: Get a company by ID
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing company with new data
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated company details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateCompanyPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a company
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a token
+      parameters:
+      - description: User login details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginPayload'
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a user using the provided payload
+      parameters:
+      - description: User registration details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+  /user/{id}:
+    delete:
+      description: Deletes a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a user
+    get:
+      description: Retrieves user details by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.User'
+      summary: Get user by ID
+    put:
+      consumes:
+      - application/json
+      description: Updates a user's profile
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a user
+swagger: "2.0"

@@ -37,6 +37,14 @@ func NewCarHandler(mux *http.ServeMux, car *services.CarService, logger *log.Log
 	return h
 }
 
+// @Summary Create a car
+// @Description Creates a new car record
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer Token"
+// @Param payload body types.CreateCarPayload true "Car data"
+// @Success 200 {object} map[string]string
+// @Router /cars [post]
 func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) error {
 	var payload types.CreateCarPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
@@ -53,6 +61,12 @@ func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) err
 	})
 }
 
+// @Summary Get car by ID
+// @Description Retrieves a car by its ID
+// @Produce json
+// @Param id path int true "Car ID"
+// @Success 200 {object} types.Car
+// @Router /cars/{id} [get]
 func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -67,6 +81,12 @@ func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) er
 	return types.WriteJSON(w, http.StatusOK, car)
 }
 
+// @Summary Delete car by ID
+// @Description Deletes a car by its ID
+// @Param Authorization header string true "Bearer Token"
+// @Param id path int true "Car ID"
+// @Success 200 {object} map[string]string
+// @Router /cars/{id} [delete]
 func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -84,6 +104,15 @@ func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+// @Summary Update car by ID
+// @Description Updates a car's details
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer Token"
+// @Param id path int true "Car ID"
+// @Param payload body types.UpdateCarPayload true "Updated car data"
+// @Success 200 {object} map[string]string
+// @Router /cars/{id} [put]
 func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -106,6 +135,12 @@ func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request)
 	})
 }
 
+// @Summary Get cars
+// @Description Retrieves a list of cars with optional filters
+// @Produce json
+// @Param filters query string false "Filters for car retrieval"
+// @Success 200 {array} types.Car
+// @Router /cars [get]
 func (h *CarHandler) handleGetCars(w http.ResponseWriter, r *http.Request) error {
 	filters, err := utils.ParseQueryFilters(r)
 	if err != nil {
