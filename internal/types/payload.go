@@ -49,3 +49,14 @@ type UpdateCarPayload struct {
 	RegistrationNo string  `json:"registration_no"`
 	PricePerDay    float64 `json:"price_per_day"`
 }
+
+type CreateBookingPayload struct {
+	CarID     int    `json:"car_id"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}
+
+type UpdateBookingPayload struct {
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+}

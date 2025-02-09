@@ -36,3 +36,12 @@ type Car struct {
 	Created        time.Time `json:"created_at" db:"created_at"`
 	Updated        time.Time `json:"updated_at" db:"updated_at"` // Last updated timestamp
 }
+
+type Booking struct {
+	ID        int       `json:"id" db:"id"`
+	UserID    int       `json:"user_id" db:"user_id"`
+	CarID     int       `json:"car_id" db:"car_id"`
+	StartDate time.Time `json:"start_date" db:"start_date"`
+	EndDate   time.Time `json:"end_date" db:"end_date"`
+	Total     float64   `json:"total" db:"total"`
+}

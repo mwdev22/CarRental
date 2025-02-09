@@ -30,3 +30,10 @@ type CarStore interface {
 	Delete(ctx context.Context, id int) error
 	GetBatch(ctx context.Context, filters []*types.QueryFilter, opts *types.QueryOptions) ([]types.Car, error)
 }
+
+type BookingStore interface {
+	Create(ctx context.Context, book *types.Booking) error
+	GetByID(ctx context.Context, id int) (*types.Booking, error)
+	Update(ctx context.Context, book *types.Booking) error
+	Delete(ctx context.Context, id int) error
+}
