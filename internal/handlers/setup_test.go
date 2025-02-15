@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 func initializeTests() (*httptest.Server, error) {
 
 	// stores and services
-	userStore := mock.NewUserRepo()
+	userStore := mock.NewUserRepository()
 	userService := services.NewUserService(userStore)
 
 	companyStore := mock.NewCompanyRepository()

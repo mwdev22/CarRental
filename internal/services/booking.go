@@ -9,21 +9,21 @@ import (
 	"github.com/mwdev22/CarRental/internal/types"
 )
 
-type BookService struct {
+type BookingService struct {
 	bookingStore store.BookingStore
 	carStore     store.CarStore
 	userStore    store.UserStore
 }
 
-func NewBookService(bookStore store.BookingStore, carStore store.CarStore, userStore store.UserStore) *BookService {
-	return &BookService{
-		bookingStore: bookStore,
+func NewBookingService(bookingStore store.BookingStore, carStore store.CarStore, userStore store.UserStore) *BookingService {
+	return &BookingService{
+		bookingStore: bookingStore,
 		carStore:     carStore,
 		userStore:    userStore,
 	}
 }
 
-func (s *BookService) Create(userId int, payload *types.CreateBookingPayload) error {
+func (s *BookingService) Create(userId int, payload *types.CreateBookingPayload) error {
 	user, err := s.userStore.GetByID(context.Background(), userId)
 	if err != nil {
 		return types.DatabaseError(err)
@@ -39,17 +39,21 @@ func (s *BookService) Create(userId int, payload *types.CreateBookingPayload) er
 		return types.NotFound("car")
 	}
 
-	startDate, err := time.Parse(time.RFC3339, payload.StartDate)
+	startDate, err := time.Parse(time.DateOnly, payload.StartDate)
 	if err != nil {
 		return types.InternalServerError(err.Error())
 	}
-	endDate, err := time.Parse(time.RFC3339, payload.EndDate)
+	endDate, err := time.Parse(time.DateOnly, payload.EndDate)
 	if err != nil {
 		return types.InternalServerError(err.Error())
 	}
 
 	if startDate.After(endDate) {
 		return types.BadRequest("start date cannot be after end date")
+	}
+
+	if !s.bookingStore.CheckDateAvailability(context.Background(), payload.CarID, startDate, endDate) {
+		return types.BadRequest("car is not available on selected dates")
 	}
 
 	// estimate price based on days
@@ -70,7 +74,7 @@ func (s *BookService) Create(userId int, payload *types.CreateBookingPayload) er
 	return nil
 }
 
-func (s *BookService) GetByID(id int) (*types.Booking, error) {
+func (s *BookingService) GetByID(id int) (*types.Booking, error) {
 	book, err := s.bookingStore.GetByID(context.Background(), id)
 	if err != nil {
 		return nil, types.DatabaseError(err)
@@ -79,7 +83,7 @@ func (s *BookService) GetByID(id int) (*types.Booking, error) {
 }
 
 // user can only extend or shorten the booking
-func (s *BookService) Update(id int, payload *types.UpdateBookingPayload) error {
+func (s *BookingService) Update(id int, payload *types.UpdateBookingPayload) error {
 	book, err := s.bookingStore.GetByID(context.Background(), id)
 	if err != nil {
 		return types.DatabaseError(err)
@@ -94,12 +98,12 @@ func (s *BookService) Update(id int, payload *types.UpdateBookingPayload) error 
 		return types.NotFound("car")
 	}
 
-	startDate, err := time.Parse(time.RFC3339, payload.StartDate)
+	startDate, err := time.Parse(time.DateOnly, payload.StartDate)
 	if err != nil {
 		return types.InternalServerError(err.Error())
 	}
 
-	endDate, err := time.Parse(time.RFC3339, payload.EndDate)
+	endDate, err := time.Parse(time.DateOnly, payload.EndDate)
 	if err != nil {
 		return types.InternalServerError(err.Error())
 	}
@@ -109,7 +113,7 @@ func (s *BookService) Update(id int, payload *types.UpdateBookingPayload) error 
 	}
 
 	// estimate price based on days once again
-	totalPrice := math.Ceil(endDate.Sub(startDate).Hours()) / 24 * car.PricePerDay
+	totalPrice := (1 + math.Ceil(endDate.Sub(startDate).Hours())/24) * car.PricePerDay
 
 	// update booking
 	book.Total = totalPrice
@@ -123,7 +127,15 @@ func (s *BookService) Update(id int, payload *types.UpdateBookingPayload) error 
 	return nil
 }
 
-func (s *BookService) Delete(id int) error {
+func (s *BookingService) GetByUserID(userId int) ([]*types.Booking, error) {
+	books, err := s.bookingStore.GetByUserID(context.Background(), userId)
+	if err != nil {
+		return nil, types.DatabaseError(err)
+	}
+	return books, nil
+}
+
+func (s *BookingService) Delete(id int) error {
 	if err := s.bookingStore.Delete(context.Background(), id); err != nil {
 		return types.DatabaseError(err)
 	}

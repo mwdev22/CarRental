@@ -14,7 +14,7 @@ type UserRepo struct {
 	nextID int
 }
 
-func NewUserRepo() *UserRepo {
+func NewUserRepository() *UserRepo {
 	return &UserRepo{
 		users:  make(map[int]types.User),
 		nextID: 1,

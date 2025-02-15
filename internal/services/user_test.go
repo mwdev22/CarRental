@@ -8,7 +8,7 @@ import (
 )
 
 func TestUserService(t *testing.T) {
-	userService := NewUserService(mock.NewUserRepo())
+	userService := NewUserService(mock.NewUserRepository())
 
 	t.Run("RegisterUser", func(t *testing.T) {
 		tests := []struct {

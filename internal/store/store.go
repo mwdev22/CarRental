@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"time"
 
 	"github.com/mwdev22/CarRental/internal/types"
 )
@@ -36,4 +37,6 @@ type BookingStore interface {
 	GetByID(ctx context.Context, id int) (*types.Booking, error)
 	Update(ctx context.Context, book *types.Booking) error
 	Delete(ctx context.Context, id int) error
+	GetByUserID(ctx context.Context, userID int) ([]*types.Booking, error)
+	CheckDateAvailability(ctx context.Context, carID int, startDate, endDate time.Time) bool
 }
