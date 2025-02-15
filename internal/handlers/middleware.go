@@ -85,10 +85,17 @@ func roleMiddleware(h apiFunc, role types.UserRole, logger *log.Logger) http.Han
 			return
 		}
 
-		tokenRole, _ := claims["role"].(types.UserRole)
+		roleFloat, ok := claims["role"].(float64)
+		if !ok {
+			http.Error(w, "invalid role type", http.StatusInternalServerError)
+			return
+		}
+
+		tokenRole := types.UserRole(int(roleFloat))
 		if tokenRole != role && tokenRole != types.UserTypeAdmin {
 			types.WriteJSON(w, http.StatusForbidden, map[string]string{
 				"error": "forbidden: insufficient role permissions",
+				"role":  fmt.Sprintf("%v", tokenRole),
 			})
 			return
 		}

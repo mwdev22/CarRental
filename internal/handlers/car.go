@@ -51,6 +51,10 @@ func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) err
 		return types.InvalidJSON(err)
 	}
 
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
+	}
+
 	err := h.car.CreateCar(&payload)
 	if err != nil {
 		return err
@@ -66,7 +70,7 @@ func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) err
 // @Produce json
 // @Param id path int true "Car ID"
 // @Success 200 {object} types.Car
-// @Router /cars/{id} [get]
+// @Router /car/{id} [get]
 func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -86,7 +90,7 @@ func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) er
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Car ID"
 // @Success 200 {object} map[string]string
-// @Router /cars/{id} [delete]
+// @Router /car/{id} [delete]
 func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -112,7 +116,7 @@ func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request)
 // @Param id path int true "Car ID"
 // @Param payload body types.UpdateCarPayload true "Updated car data"
 // @Success 200 {object} map[string]string
-// @Router /cars/{id} [put]
+// @Router /car/{id} [put]
 func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request) error {
 	id := r.PathValue("id")
 	idInt, err := strconv.Atoi(id)
@@ -123,6 +127,10 @@ func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request)
 	var payload types.UpdateCarPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
 		return types.InvalidJSON(err)
+	}
+
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
 	}
 
 	err = h.car.UpdateCar(idInt, &payload)

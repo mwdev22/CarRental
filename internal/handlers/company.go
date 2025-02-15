@@ -53,6 +53,10 @@ func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Requ
 		return types.InvalidJSON(err)
 	}
 
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
+	}
+
 	userId, ok := r.Context().Value(userIdKey).(int)
 	if !ok {
 		return types.Unauthorized("user id not found in token")
@@ -105,6 +109,10 @@ func (h *CompanyHandler) handleUpdateCompany(w http.ResponseWriter, r *http.Requ
 	var payload types.UpdateCompanyPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
 		return types.InvalidJSON(err)
+	}
+
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
 	}
 
 	userId, ok := r.Context().Value(userIdKey).(int)

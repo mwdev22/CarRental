@@ -3,7 +3,8 @@ package types
 type UserRole int
 
 const (
-	UserTypeAdmin UserRole = iota
+	UserTypeTest UserRole = iota
+	UserTypeAdmin
 	UserTypeCompanyOwner
 	UserTypeUser
 )

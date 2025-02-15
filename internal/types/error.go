@@ -25,6 +25,13 @@ func InvalidJSON(err error) ApiError {
 	return newApiError(http.StatusUnprocessableEntity, fmt.Errorf("invalid json, %v", err))
 }
 
+func ValidationError(errors map[string]string) ApiError {
+	return ApiError{
+		StatusCode: http.StatusBadRequest,
+		Msg:        errors,
+	}
+}
+
 func InvalidFormData(err error) ApiError {
 	return newApiError(http.StatusUnprocessableEntity, err)
 }

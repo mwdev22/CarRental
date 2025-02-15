@@ -149,4 +149,15 @@ func TestBookingService(t *testing.T) {
 		}
 
 	})
+
+	t.Run("DeleteBooking", func(t *testing.T) {
+		err := bookingService.Delete(1)
+		if err != nil {
+			t.Fatalf("failed to delete booking: %v", err)
+		}
+		book, _ := bookingService.GetByID(1)
+		if book != nil {
+			t.Fatalf("expected booking deleted, got: %v", book)
+		}
+	})
 }

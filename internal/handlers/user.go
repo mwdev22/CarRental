@@ -11,6 +11,7 @@ import (
 	"github.com/mwdev22/CarRental/internal/config"
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/types"
+	"github.com/mwdev22/CarRental/internal/utils"
 )
 
 type UserHandler struct {
@@ -50,6 +51,10 @@ func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) err
 		return types.InvalidJSON(err)
 	}
 
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
+	}
+
 	err := h.user.Register(&payload)
 	if err != nil {
 		return err
@@ -73,6 +78,11 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 	if err := types.ParseJSON(r, &payload); err != nil {
 		return types.InvalidJSON(err)
 	}
+
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
+	}
+
 	token, err := h.user.Login(&payload)
 	if err != nil {
 		return err
@@ -143,6 +153,7 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 // @Produce json
 // @Param id path int true "User ID"
 // @Param Authorization header string true "Bearer Token"
+// @Param payload body types.UpdateUserPayload true "Updated user details"
 // @Success 200 {object} map[string]string
 // @Router /user/{id} [put]
 func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
@@ -163,6 +174,9 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 	var payload types.UpdateUserPayload
 	if err := types.ParseJSON(r, &payload); err != nil {
 		return types.InvalidJSON(err)
+	}
+	if errors := utils.ValidateStruct(&payload); len(errors) > 0 {
+		return types.ValidationError(errors)
 	}
 
 	err = h.user.Update(userIDInt, &payload)

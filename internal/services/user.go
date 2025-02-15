@@ -33,7 +33,7 @@ func (s *UserService) Register(payload *types.CreateUserPayload) error {
 		Username: payload.Username,
 		Password: hashedPassword,
 		Email:    payload.Email,
-		Role:     payload.Role,
+		Role:     types.UserRole(payload.Role),
 	}
 
 	if err := s.userStore.Create(context.Background(), user); err != nil {
@@ -74,6 +74,7 @@ func generateJWT(user *types.User) (string, error) {
 		"id":       user.ID,
 		"username": user.Username,
 		"email":    user.Email,
+		"role":     user.Role,
 		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	}
 

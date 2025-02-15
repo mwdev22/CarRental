@@ -6,8 +6,22 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/mwdev22/CarRental/internal/types"
 )
+
+var validate = validator.New()
+
+func ValidateStruct(data interface{}) map[string]string {
+	errors := make(map[string]string)
+	err := validate.Struct(data)
+	if err != nil {
+		for _, e := range err.(validator.ValidationErrors) {
+			errors[e.Field()] = e.Tag()
+		}
+	}
+	return errors
+}
 
 // scraping filters from query
 func ParseQueryFilters(r *http.Request) ([]*types.QueryFilter, error) {

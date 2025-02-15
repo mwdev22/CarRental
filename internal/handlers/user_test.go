@@ -47,8 +47,16 @@ func TestLogin(t *testing.T) {
 	registerResp := sendPostRequest(registerURL, registerPayload, t)
 	defer registerResp.Body.Close()
 
+	var respBody map[string]string
+	if err := json.NewDecoder(registerResp.Body).Decode(&respBody); err != nil {
+		t.Fatalf("failed to parse login response body: %v", err)
+	}
+
+	t.Logf("register response: %v", respBody)
+
 	if registerResp.StatusCode != http.StatusOK {
 		t.Fatalf("failed to register test user: expected status 200, got %d", registerResp.StatusCode)
+
 	}
 
 	testUsername = userName
@@ -149,6 +157,7 @@ func TestGetUser(t *testing.T) {
 	if user.Email != "newmail@gmail.com" {
 		t.Errorf("expected email newmail@gmail.com, got %s", user.Email)
 	}
+
 }
 
 func TestDeleteUser(t *testing.T) {
