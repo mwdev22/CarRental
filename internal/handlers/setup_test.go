@@ -13,8 +13,10 @@ import (
 
 	"github.com/mwdev22/CarRental/internal/config"
 	"github.com/mwdev22/CarRental/internal/services"
+	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/store/mock"
 	"github.com/mwdev22/CarRental/internal/utils"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -52,11 +54,21 @@ func initializeTests() (*httptest.Server, error) {
 	carStore := mock.NewCarRepository()
 	carService := services.NewCarService(carStore)
 
+	bookingStore := mock.NewBookingStore()
+	bookingService := services.NewBookingService(bookingStore, carStore, userStore)
+
+	r := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+		DB:   5,
+	})
+	c := store.NewRedisCache(r)
+
 	// handlers
 	mux := http.NewServeMux()
 	_ = NewUserHandler(mux, userService, log.Default())
 	_ = NewCompanyHandler(mux, companyService, log.Default())
 	_ = NewCarHandler(mux, carService, log.Default())
+	_ = NewBookingHandler(mux, bookingService, carService, c, log.Default())
 	// setup the test server
 	testServer = httptest.NewServer(mux)
 	return testServer, nil

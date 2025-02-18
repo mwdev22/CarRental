@@ -35,7 +35,7 @@ func generateCars(count int, t *testing.T) ([]byte, []*types.CreateCarPayload) {
 
 func TestCreateCar(t *testing.T) {
 
-	TestLogin(t)
+	// TestLogin(t)
 
 	body, _ := generateCars(1, t)
 	var responseBody map[string]string
