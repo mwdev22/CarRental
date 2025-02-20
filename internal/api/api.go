@@ -9,8 +9,10 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/mwdev22/CarRental/internal/handlers"
 	"github.com/mwdev22/CarRental/internal/services"
+	"github.com/mwdev22/CarRental/internal/store"
 	"github.com/mwdev22/CarRental/internal/store/postgres"
 	"github.com/mwdev22/CarRental/internal/utils"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/cors"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
@@ -49,12 +51,20 @@ func (a *api) Start() error {
 	carService := services.NewCarService(carStore)
 	companyStore := postgres.NewCompanyRepository(a.db)
 	companyService := services.NewCompanyService(companyStore)
+	bookingStore := postgres.NewBookingRepository(a.db)
+	bookingService := services.NewBookingService(bookingStore, carStore, userStore)
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
+	userCompCache := store.NewRedisCache(redisClient)
 
 	// --- MAIN ROUTES ---
 
 	_ = handlers.NewUserHandler(mux, userService, utils.MakeLogger("user"))
 	_ = handlers.NewCarHandler(mux, carService, utils.MakeLogger("car"))
 	_ = handlers.NewCompanyHandler(mux, companyService, utils.MakeLogger("company"))
+	_ = handlers.NewBookingHandler(mux, bookingService, carService, userCompCache, utils.MakeLogger("booking"))
 
 	c := cors.New(cors.Options{
 		AllowedOrigins:      []string{"*"},

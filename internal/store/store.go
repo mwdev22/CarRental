@@ -33,9 +33,9 @@ type CarStore interface {
 }
 
 type BookingStore interface {
-	Create(ctx context.Context, book *types.Booking) error
+	Create(ctx context.Context, booking *types.Booking) error
 	GetByID(ctx context.Context, id int) (*types.Booking, error)
-	Update(ctx context.Context, book *types.Booking) error
+	Update(ctx context.Context, booking *types.Booking) error
 	Delete(ctx context.Context, id int) error
 	GetByUserID(ctx context.Context, userID int) ([]*types.Booking, error)
 	CheckDateAvailability(ctx context.Context, carID int, startDate, endDate time.Time) bool
