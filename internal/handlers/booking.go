@@ -39,12 +39,17 @@ func NewBookingHandler(mux *http.ServeMux, booking *services.BookingService, car
 	return h
 }
 
+func (h *BookingHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
+}
+
 // @Summary Create a booking
 // @Description Creates a new booking record
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer Token"
 // @Param payload body types.CreateBookingPayload true "Booking data"
+// @Tags Booking
 // @Success 200 {object} map[string]string
 // @Router /booking [post]
 func (h *BookingHandler) handleCreateBooking(w http.ResponseWriter, r *http.Request) error {
@@ -74,6 +79,7 @@ func (h *BookingHandler) handleCreateBooking(w http.ResponseWriter, r *http.Requ
 // @Produce json
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Booking ID"
+// @Tags Booking
 // @Success 200 {object} types.Booking
 // @Router /booking/{id} [get]
 func (h *BookingHandler) handleGetBookingByID(w http.ResponseWriter, r *http.Request) error {
@@ -105,6 +111,14 @@ func (h *BookingHandler) handleGetBookingByID(w http.ResponseWriter, r *http.Req
 	return types.WriteJSON(w, http.StatusOK, booking)
 }
 
+// @Summary Get bookings by user ID
+// @Description Retrieves all bookings for a user
+// @Produce json
+// @Param Authorization header string true "Bearer Token"
+// @Param id path int true "User ID"
+// @Tags Booking
+// @Success 200 {array} types.Booking
+// @Router /booking/user/{id} [get]
 func (h *BookingHandler) handleGetUserBookings(w http.ResponseWriter, r *http.Request) error {
 	userID := r.PathValue("id")
 	idInt, err := strconv.Atoi(userID)
@@ -127,6 +141,7 @@ func (h *BookingHandler) handleGetUserBookings(w http.ResponseWriter, r *http.Re
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Booking ID"
 // @Param payload body types.UpdateBookingPayload true "Updated booking data"
+// @Tags Booking
 // @Success 200 {object} map[string]string
 // @Router /booking/{id} [put]
 func (h *BookingHandler) handleUpdateBooking(w http.ResponseWriter, r *http.Request) error {
@@ -174,6 +189,7 @@ func (h *BookingHandler) handleUpdateBooking(w http.ResponseWriter, r *http.Requ
 // @Description Deletes a booking by its ID
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Booking ID"
+// @Tags Booking
 // @Success 200 {object} map[string]string
 // @Router /booking/{id} [delete]
 func (h *BookingHandler) handleDeleteBookingByID(w http.ResponseWriter, r *http.Request) error {

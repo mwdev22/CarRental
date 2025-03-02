@@ -37,12 +37,17 @@ func NewCarHandler(mux *http.ServeMux, car *services.CarService, logger *log.Log
 	return h
 }
 
+func (h *CarHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
+}
+
 // @Summary Create a car
 // @Description Creates a new car record
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer Token"
 // @Param payload body types.CreateCarPayload true "Car data"
+// @Tags Car
 // @Success 200 {object} map[string]string
 // @Router /cars [post]
 func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) error {
@@ -69,6 +74,7 @@ func (h *CarHandler) handleCreateCar(w http.ResponseWriter, r *http.Request) err
 // @Description Retrieves a car by its ID
 // @Produce json
 // @Param id path int true "Car ID"
+// @Tags Car
 // @Success 200 {object} types.Car
 // @Router /car/{id} [get]
 func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) error {
@@ -89,6 +95,7 @@ func (h *CarHandler) handleGetCarByID(w http.ResponseWriter, r *http.Request) er
 // @Description Deletes a car by its ID
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Car ID"
+// @Tags Car
 // @Success 200 {object} map[string]string
 // @Router /car/{id} [delete]
 func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request) error {
@@ -115,6 +122,7 @@ func (h *CarHandler) handleDeleteCarByID(w http.ResponseWriter, r *http.Request)
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Car ID"
 // @Param payload body types.UpdateCarPayload true "Updated car data"
+// @Tags Car
 // @Success 200 {object} map[string]string
 // @Router /car/{id} [put]
 func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request) error {
@@ -146,7 +154,11 @@ func (h *CarHandler) handleUpdateCarByID(w http.ResponseWriter, r *http.Request)
 // @Summary Get cars
 // @Description Retrieves a list of cars with optional filters
 // @Produce json
-// @Param filters query string false "Filters for car retrieval"
+// @Param filters query string false "Filters for car retrieval. eg. make[ct]=Mercedes&model[ct]=CLA&year=2022"
+// @Param sort query string false "sort for car retrieval, eg. id-asc"
+// @Param page query int false "page number for car retrieval"
+// @Param page_size query int false "number of items per page"
+// @Tags Car
 // @Success 200 {array} types.Car
 // @Router /cars [get]
 func (h *CarHandler) handleGetCars(w http.ResponseWriter, r *http.Request) error {

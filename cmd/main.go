@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cfg := config.New()
-	db, err := database.OpenSQLConnection(cfg.DatabaseURI)
+	db, err := database.OpenSQLConnection(cfg.DatabaseURI, cfg.DBType)
 	if err != nil {
 		log.Fatalf("failed to open database connection: %v", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mwdev22/CarRental/docs"
 	"github.com/mwdev22/CarRental/internal/handlers"
 	"github.com/mwdev22/CarRental/internal/services"
 	"github.com/mwdev22/CarRental/internal/store"

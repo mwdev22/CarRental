@@ -1,22 +1,25 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"time"
+
+	_ "github.com/lib/pq"
 
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq" // Register the PostgreSQL driver
-	_ "github.com/mattn/go-sqlite3"
 )
 
-func OpenSQLConnection(uri string) (*sqlx.DB, error) {
+func OpenSQLConnection(uri string, dbType string) (*sqlx.DB, error) {
 	var db *sqlx.DB
 	var err error
 
-	db, err = sqlx.Open("postgres", uri)
+	fmt.Println(uri, dbType)
+
+	db, err = sqlx.Open(dbType, uri)
 
 	if err != nil {
 		log.Fatalf("failed to connect to the database: %v", err)

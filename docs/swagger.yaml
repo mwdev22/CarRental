@@ -1,0 +1,792 @@
+definitions:
+  types.Booking:
+    properties:
+      car_id:
+        type: integer
+      end_date:
+        type: string
+      id:
+        type: integer
+      start_date:
+        type: string
+      total:
+        type: number
+      user_id:
+        type: integer
+    type: object
+  types.Car:
+    properties:
+      color:
+        type: string
+      company_id:
+        description: ID of the company that owns the car
+        type: integer
+      created_at:
+        type: string
+      id:
+        type: integer
+      make:
+        description: Make (e.g., Toyota, Ford)
+        type: string
+      model:
+        description: Model (e.g., Corolla, Mustang)
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        description: Car registration number
+        type: string
+      updated_at:
+        description: Last updated timestamp
+        type: string
+      year:
+        description: Year of manufacture
+        type: integer
+    type: object
+  types.Company:
+    properties:
+      address:
+        description: Address of the company
+        type: string
+      created_at:
+        type: string
+      email:
+        description: Contact email
+        type: string
+      id:
+        description: Unique ID for the company
+        type: integer
+      name:
+        description: Company name
+        type: string
+      owner_id:
+        description: ID of the user who owns the company
+        type: integer
+      phone:
+        description: Contact phone number
+        type: string
+      updated_at:
+        description: Last updated timestamp
+        type: string
+    type: object
+  types.CreateBookingPayload:
+    properties:
+      car_id:
+        type: integer
+      end_date:
+        type: string
+      start_date:
+        type: string
+    required:
+    - car_id
+    - end_date
+    - start_date
+    type: object
+  types.CreateCarPayload:
+    properties:
+      color:
+        type: string
+      company_id:
+        type: integer
+      make:
+        type: string
+      model:
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        type: string
+      year:
+        maximum: 2025
+        minimum: 1886
+        type: integer
+    required:
+    - color
+    - company_id
+    - make
+    - model
+    - price_per_day
+    - registration_no
+    - year
+    type: object
+  types.CreateCompanyPayload:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    required:
+    - address
+    - email
+    - name
+    - phone
+    type: object
+  types.CreateUserPayload:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 3
+        type: string
+      role:
+        $ref: '#/definitions/types.UserRole'
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - role
+    - username
+    type: object
+  types.LoginPayload:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  types.UpdateBookingPayload:
+    properties:
+      end_date:
+        type: string
+      start_date:
+        type: string
+    type: object
+  types.UpdateCarPayload:
+    properties:
+      color:
+        type: string
+      make:
+        type: string
+      model:
+        type: string
+      price_per_day:
+        type: number
+      registration_no:
+        type: string
+      year:
+        maximum: 2025
+        minimum: 1886
+        type: integer
+    type: object
+  types.UpdateCompanyPayload:
+    properties:
+      address:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone:
+        type: string
+    type: object
+  types.UpdateUserPayload:
+    properties:
+      email:
+        type: string
+      username:
+        maxLength: 30
+        minLength: 3
+        type: string
+    type: object
+  types.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        $ref: '#/definitions/types.UserRole'
+      username:
+        type: string
+    type: object
+  types.UserRole:
+    enum:
+    - 0
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-varnames:
+    - UserTypeTest
+    - UserTypeAdmin
+    - UserTypeCompanyOwner
+    - UserTypeUser
+info:
+  contact: {}
+paths:
+  /booking:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new booking record
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Booking data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateBookingPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a booking
+      tags:
+      - Booking
+  /booking/{id}:
+    delete:
+      description: Deletes a booking by its ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete booking by ID
+      tags:
+      - Booking
+    get:
+      description: Retrieves a booking based on the provided ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Booking'
+      summary: Get booking by ID
+      tags:
+      - Booking
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing booking with new data
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Booking ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated booking data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateBookingPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update booking by ID
+      tags:
+      - Booking
+  /booking/user/{id}:
+    get:
+      description: Retrieves all bookings for a user
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Booking'
+            type: array
+      summary: Get bookings by user ID
+      tags:
+      - Booking
+  /car/{id}:
+    delete:
+      description: Deletes a car by its ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete car by ID
+      tags:
+      - Car
+    get:
+      description: Retrieves a car by its ID
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Car'
+      summary: Get car by ID
+      tags:
+      - Car
+    put:
+      consumes:
+      - application/json
+      description: Updates a car's details
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated car data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateCarPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update car by ID
+      tags:
+      - Car
+  /cars:
+    get:
+      description: Retrieves a list of cars with optional filters
+      parameters:
+      - description: Filters for car retrieval. eg. make[ct]=Mercedes&model[ct]=CLA&year=2022
+        in: query
+        name: filters
+        type: string
+      - description: sort for car retrieval, eg. id-asc
+        in: query
+        name: sort
+        type: string
+      - description: page number for car retrieval
+        in: query
+        name: page
+        type: integer
+      - description: number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Car'
+            type: array
+      summary: Get cars
+      tags:
+      - Car
+    post:
+      consumes:
+      - application/json
+      description: Creates a new car record
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Car data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateCarPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a car
+      tags:
+      - Car
+  /check-token:
+    post:
+      consumes:
+      - application/json
+      description: Retrieve user's token claims
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check Token
+      tags:
+      - User
+  /companies:
+    get:
+      description: Retrieves a list of companies based on query filters and options
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Query filters
+        in: query
+        name: filters
+        type: object
+      - description: Query options
+        in: query
+        name: options
+        type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/types.Company'
+            type: array
+      summary: Get a list of companies
+      tags:
+      - Company
+    post:
+      consumes:
+      - application/json
+      description: Creates a company using the provided payload
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateCompanyPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new company
+      tags:
+      - Company
+  /companies/{id}:
+    delete:
+      description: Deletes a company by ID
+      parameters:
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a company
+      tags:
+      - Company
+    get:
+      description: Retrieves a company based on the provided ID
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.Company'
+      summary: Get a company by ID
+      tags:
+      - Company
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing company with new data
+      parameters:
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Company ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated company details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateCompanyPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a company
+      tags:
+      - Company
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a token
+      parameters:
+      - description: User login details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.LoginPayload'
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: User login
+      tags:
+      - User
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a user using the provided payload
+      parameters:
+      - description: User registration details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.CreateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - User
+  /user/{id}:
+    delete:
+      description: Deletes a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a user
+      tags:
+      - User
+    get:
+      description: Retrieves user details by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/types.User'
+      summary: Get user by ID
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Updates a user's profile
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Bearer Token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updated user details
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/types.UpdateUserPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a user
+      tags:
+      - User
+swagger: "2.0"

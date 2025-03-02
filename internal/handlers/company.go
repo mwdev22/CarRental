@@ -39,6 +39,10 @@ func NewCompanyHandler(mux *http.ServeMux, company *services.CompanyService, log
 	return h
 }
 
+func (h *CompanyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
+}
+
 // @Summary Create a new company
 // @Description Creates a company using the provided payload
 // @Accept json
@@ -46,6 +50,7 @@ func NewCompanyHandler(mux *http.ServeMux, company *services.CompanyService, log
 // @Param Authorization header string true "Bearer Token"
 // @Param payload body types.CreateCompanyPayload true "Company details"
 // @Success 200 {object} map[string]string
+// @Tags Company
 // @Router /companies [post]
 func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Request) error {
 	var payload types.CreateCompanyPayload
@@ -76,6 +81,7 @@ func (h *CompanyHandler) handleCreateCompany(w http.ResponseWriter, r *http.Requ
 // @Produce json
 // @Param Authorization header string true "Bearer Token"
 // @Param id path int true "Company ID"
+// @Tags Company
 // @Success 200 {object} types.Company
 // @Router /companies/{id} [get]
 func (h *CompanyHandler) handleGetCompanyByID(w http.ResponseWriter, r *http.Request) error {
@@ -99,6 +105,7 @@ func (h *CompanyHandler) handleGetCompanyByID(w http.ResponseWriter, r *http.Req
 // @Param id path int true "Company ID"
 // @Param payload body types.UpdateCompanyPayload true "Updated company details"
 // @Success 200 {object} map[string]string
+// @Tags Company
 // @Router /companies/{id} [put]
 func (h *CompanyHandler) handleUpdateCompany(w http.ResponseWriter, r *http.Request) error {
 	companyId, err := strconv.Atoi(r.PathValue("id"))
@@ -133,6 +140,8 @@ func (h *CompanyHandler) handleUpdateCompany(w http.ResponseWriter, r *http.Requ
 // @Description Deletes a company by ID
 // @Param id path int true "Company ID"
 // @Param Authorization header string true "Bearer Token"
+// @Tags Company
+// @Produce json
 // @Success 200 {object} map[string]string
 // @Router /companies/{id} [delete]
 func (h *CompanyHandler) handleDeleteCompany(w http.ResponseWriter, r *http.Request) error {
@@ -161,6 +170,7 @@ func (h *CompanyHandler) handleDeleteCompany(w http.ResponseWriter, r *http.Requ
 // @Param Authorization header string true "Bearer Token"
 // @Param filters query object false "Query filters"
 // @Param options query object false "Query options"
+// @Tags Company
 // @Success 200 {array} types.Company
 // @Router /companies [get]
 func (h *CompanyHandler) handleGetCopmanies(w http.ResponseWriter, r *http.Request) error {

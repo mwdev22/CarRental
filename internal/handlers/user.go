@@ -38,11 +38,16 @@ func NewUserHandler(mux *http.ServeMux, user *services.UserService, logger *log.
 	return h
 }
 
+func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.mux.ServeHTTP(w, r)
+}
+
 // @Summary Register a new user
 // @Description Registers a user using the provided payload
 // @Accept json
 // @Produce json
 // @Param payload body types.CreateUserPayload true "User registration details"
+// @Tags User
 // @Success 200 {object} map[string]string
 // @Router /register [post]
 func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) error {
@@ -71,6 +76,7 @@ func (h *UserHandler) handleRegister(w http.ResponseWriter, r *http.Request) err
 // @Produce json
 // @Param payload body types.LoginPayload true "User login details"
 // @Param Authorization header string true "Bearer Token"
+// @Tags User
 // @Success 200 {object} map[string]string
 // @Router /login [post]
 func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error {
@@ -98,6 +104,7 @@ func (h *UserHandler) handleLogin(w http.ResponseWriter, r *http.Request) error 
 // @Produce json
 // @Param id path int true "User ID"
 // @Param Authorization header string true "Bearer Token"
+// @Tags User
 // @Success 200 {object} types.User
 // @Router /user/{id} [get]
 func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) error {
@@ -121,6 +128,7 @@ func (h *UserHandler) handleGetUser(w http.ResponseWriter, r *http.Request) erro
 // @Description Deletes a user by ID
 // @Param id path int true "User ID"
 // @Param Authorization header string true "Bearer Token"
+// @Tags User
 // @Success 200 {object} map[string]string
 // @Router /user/{id} [delete]
 func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) error {
@@ -154,6 +162,7 @@ func (h *UserHandler) handleDeleteUser(w http.ResponseWriter, r *http.Request) e
 // @Param id path int true "User ID"
 // @Param Authorization header string true "Bearer Token"
 // @Param payload body types.UpdateUserPayload true "Updated user details"
+// @Tags User
 // @Success 200 {object} map[string]string
 // @Router /user/{id} [put]
 func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) error {
@@ -194,6 +203,7 @@ func (h *UserHandler) handleUpdateUser(w http.ResponseWriter, r *http.Request) e
 // @Accept json
 // @Produce json
 // @Param Authorization header string true "Bearer Token"
+// @Tags User
 // @Success 200 {object} map[string]string
 // @Router /check-token [post]
 func (h *UserHandler) handleCheckToken(w http.ResponseWriter, r *http.Request) error {

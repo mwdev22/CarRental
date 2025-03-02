@@ -1,26 +1,28 @@
-# Step 1: Build the Go application
-FROM golang:1.21-alpine as builder
+FROM golang:1.21 AS builder
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
-
-RUN go mod tidy
+RUN go mod download
 
 COPY . .
 
-RUN make build
+RUN go build -o main ./cmd/main.go
+
+# ---------------------------------------------
 
 FROM alpine:latest
 
-WORKDIR /root/
-
+# install deoendencies
 RUN apk --no-cache add ca-certificates
 
-COPY --from=builder /app/file_storage .
+WORKDIR /root/
 
-COPY .env .env
+# copy binary from builder
+COPY --from=builder /app/main .
 
-EXPOSE 8080
+# copy migrations
+COPY --from=builder /app/migrations ./migrations
 
-CMD ["./file_storage"]
+
+CMD ["./main"]
